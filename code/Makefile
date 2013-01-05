@@ -41,8 +41,11 @@ NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB)
 %.o : $(SRCDIR)/%.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $<
 
-all: $(TARGET)
-	@echo "compilation OK (target $(shell uname))"
+all: arch-cible $(TARGET)
+	@echo "compilation OK"
+
+arch-cible:
+	@echo "compilation pour architecture $(shell uname)"
 
 $(TARGET): makedirs $(OBJS)
 	$(NVIDIA_LINKLINE)

@@ -7,7 +7,11 @@
 
 #include <iostream>
 #include <string>
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
 #include <CL/cl.h>
+#endif
 #include "CLManager.h"
 
 
