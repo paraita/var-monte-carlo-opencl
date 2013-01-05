@@ -33,6 +33,7 @@ void CLManager::printPlatform()
   cl_device_id *devices = NULL;
   char *platformName = NULL;
   char *platformVendor = NULL;
+  char *platformVersion = NULL;
   char *deviceName = NULL;
   char *deviceVendor = NULL;
   char *deviceVersion = NULL;
@@ -68,8 +69,16 @@ void CLManager::printPlatform()
     platformVendor = (char *)malloc(paramSize);
     err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VENDOR, paramSize, platformVendor, NULL);
     err_check(err, "recup du vendor de plateforme", true);
+    
+    // recup version plateforme
+    err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VERSION, 0, NULL, &paramSize);
+    err_check(err, "recup de la taille de la version de plateforme", true);
+    platformVersion = (char *)malloc(paramSize);
+    err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VERSION, paramSize, platformVersion, NULL);
+    err_check(err, "recup de la version de plateforme", true);
 
     std::cout << "Plateforme: " << platformName << " (" << platformVendor << ")" << std::endl;
+    std::cout << "Version d'OpenCL supportee: " << platformVersion << std::endl;
 
     // recup nb devices
     err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
@@ -128,6 +137,7 @@ void CLManager::printPlatform()
     }
     free(platformName);
     free(platformVendor);
+    free(platformVersion);
     free(devices);
   }
   free(platforms);
