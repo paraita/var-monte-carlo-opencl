@@ -53,6 +53,7 @@ $(TARGET): makedirs $(OBJS)
 makedirs:
 	@mkdir -p $(OBJDIR)
 	@mkdir -p $(BINDIR)
+	@cp $(SRCDIR)/test_addition.cl $(BINDIR)/test_addition.cl
 
 clean:
 	@echo "uoti, ma ro'a !"

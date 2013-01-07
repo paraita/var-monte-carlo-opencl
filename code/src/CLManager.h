@@ -21,14 +21,17 @@ class CLManager {
 
  public:
   void printPlatform();
-  cl_context init();
+  void loadKernel(const std::string, const char **, size_t *);
+  void init(const cl_device_id, cl_context *, cl_command_queue *);
   void clean();
   cl_program compileKernel();
   void setKernelArg();
   void executeKernel();
+  void getAllPlatforms(cl_uint *, cl_platform_id **);
+  void getAllDevicesByPlatform(cl_platform_id, cl_uint *, cl_device_id **);
+  void check(const cl_int, const std::string);
  private:
   void err_check(const cl_int, const std::string, const bool);
-
 };
 
 
