@@ -5,6 +5,13 @@
 #
 ################################################################################
 
+# specifique a NEF
+ifeq ($(shell uname -n), nef-devel)
+OPENCL_INC	:= -I/usr/local/cuda-5.0/include
+else
+OPENCL_INC	:=
+endif
+
 # libs
 OPENCL_LIB_OSX   := -framework OpenCL
 OPENCL_LIB_LINUX := -lOpenCL
@@ -39,7 +46,7 @@ NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB)
 # Regles
 ################################################################################
 %.o : $(SRCDIR)/%.cpp
-	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $<
+	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $< $(OPENCL_INC)
 
 all: arch-cible $(TARGET)
 	@echo "compilation OK"
