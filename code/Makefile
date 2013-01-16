@@ -13,12 +13,18 @@ OPENCL_INC	:=
 endif
 
 # libs
+BOOST_INC_OSX	 := -I/opt/local/include
+BOOST_LIB_OSX	 := -L/opt/local/lib
 OPENCL_LIB_OSX   := -framework OpenCL
 OPENCL_LIB_LINUX := -lOpenCL
 ifeq ($(shell uname), Linux)
 OPENCL_LIB       := $(OPENCL_LIB_LINUX)
+BOOST_INC	 :=
+BOOST_LIB	 :=
 else
 OPENCL_LIB       := $(OPENCL_LIB_OSX)
+BOOST_INC	 := $(BOOST_INC_OSX)
+BOOST_LIB	 := $(BOOST_LIB_OSX)
 endif
 
 # arborescence
@@ -39,14 +45,14 @@ LOBJS := $(patsubst %.o,$(OBJDIR)/%.o,$(OBJS))
 
 # Build executable commands
 TARGET  := $(BINDIR)/$(EXECUTABLE)
-NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB)
+NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB) $(BOOST_LIB)
 
 
 ################################################################################
 # Regles
 ################################################################################
 %.o : $(SRCDIR)/%.cpp
-	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $< $(OPENCL_INC)
+	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $< $(OPENCL_INC) $(BOOST_INC)
 
 all: arch-cible $(TARGET)
 	@echo "compilation OK"
