@@ -160,7 +160,7 @@ void CLManager::printPlatform() {
       std::cout << "\t\tVersion OpenCL supportee: " << deviceVersion << std::endl;
       std::cout << "\t\tVersion Driver: " << deviceDriverVersion << std::endl;
       std::cout << "\t\tTaille Compute Units:" << deviceMaxCU << std::endl;
-      std::cout << "\t\tTaille Work Group:" << deviceMaxWG << std::endl;
+      std::cout << "\t\tTaille Max Work Group:" << deviceMaxWG << std::endl;
 
       free(deviceName);
       free(deviceVendor);
