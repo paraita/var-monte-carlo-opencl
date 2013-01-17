@@ -61,7 +61,8 @@ arch-cible:
 	@echo "compilation pour architecture $(shell uname)"
 
 nef: all
-	@echo "run sur nef ok"
+	@echo "run sur nef"
+	qsub monjob.pbs
 
 $(TARGET): makedirs $(OBJS)
 	$(NVIDIA_LINKLINE)
