@@ -60,6 +60,9 @@ all: arch-cible $(TARGET)
 arch-cible:
 	@echo "compilation pour architecture $(shell uname)"
 
+nef: all
+	@echo "run sur nef ok"
+
 $(TARGET): makedirs $(OBJS)
 	$(NVIDIA_LINKLINE)
 
