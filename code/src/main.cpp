@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <string>
 #include <string.h>
 #ifdef __APPLE__
@@ -19,7 +20,7 @@
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 #define PRINT_USAGE "Usage: -s S0 -t horizon -v volatilite"
-#define KERNEL_PROTO "__kernel void prototype(__global const float *PORTEFEUILLE, \
+#define KERNEL_PROTO_BUG "__kernel void prototype(__global const float *PORTEFEUILLE, \
                                               __global const float *ALEA, \
                                               __global float *TIRAGES, \
                                               __global int *nb_actions, \
@@ -35,7 +36,7 @@
                                         TIRAGES[i] = TIRAGES[i] + tmp; \
                                       } \
 			  }"
-#define KERNEL_PROTO_CACA "__kernel void prototype(__global const float *PORTEFEUILLE, \
+#define KERNEL_PROTO "__kernel void prototype(__global const float *PORTEFEUILLE, \
                                               __global const float *ALEA, \
                                               __global float *TIRAGES, \
                                               __global int *nb_actions, \
@@ -62,12 +63,13 @@ void prototype();
 
 void prototype()
 {
+  const float seuil_confiance = 0.99;
   int NB_ACTIONS = 10;
   int NB_TIRAGES = 100;
-  int T = 1;
+  int T = 2;
   float *N = (float *) calloc(NB_ACTIONS * NB_TIRAGES * T, sizeof(float));
   float *TIRAGES = (float *) calloc(NB_TIRAGES, sizeof(float));
-  std::string source = KERNEL_PROTO_CACA;
+  std::string source = KERNEL_PROTO;
   const char *source_str = source.c_str();
   size_t source_size = source.size();
   CLManager clm;
@@ -256,8 +258,17 @@ void prototype()
   for(int g = 0; g < NB_TIRAGES; g++) {
     printf("\tTIRAGES[%d]=%f\n", g, TIRAGES[g]);
   }
+  std::sort(TIRAGES, TIRAGES+NB_TIRAGES);
+  std::cout << "TIRAGES[] apres tri:" << std::endl;
+  for(int g = 0; g < NB_TIRAGES; g++) {
+    printf("\tTIRAGES[%d]=%f\n", g, TIRAGES[g]);
+  }
   
   // je chope ma VaR
+  int percentile = NB_TIRAGES * int(1.0 - seuil_confiance);
+  std::cout << "Valeur du portefeuille aujourd'hui: " << rendement_portefeuille << std::endl;
+  std::cout << "la VaR à " << (seuil_confiance * 100);
+  std::cout << "% est de " << TIRAGES[percentile+1] << std::endl;
   
   // je clean
 
