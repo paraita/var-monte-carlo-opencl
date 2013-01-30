@@ -41,3 +41,7 @@ local.properties
 
 # sonar
 code/.sonar/
+
+# plotting
+code/*.png
+code/*.data

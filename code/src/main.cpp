@@ -53,9 +53,9 @@ void prototype();
 void prototype()
 {
   const float seuil_confiance = 0.99;
-  int NB_ACTIONS = 10;
-  int NB_TIRAGES = 1000000;
-  int T = 1;
+  int NB_ACTIONS = 1;
+  int NB_TIRAGES = 1000;
+  int T = 500;
   float *N = (float *) calloc(NB_ACTIONS * NB_TIRAGES * T, sizeof(float));
   float *TIRAGES = (float *) calloc(NB_TIRAGES, sizeof(float));
   std::string source = KERNEL_PROTO;
@@ -92,8 +92,8 @@ void prototype()
 
   // taille des valeurs aleatoires dans la global
   std::cout << "\tOccupation mémoire (toutes les gaussiennes): ";
-  std::cout << NB_ACTIONS * NB_TIRAGES * T * sizeof(float);
-  std::cout << " octets" << std::endl;
+  std::cout << NB_ACTIONS * NB_TIRAGES * T * sizeof(float) / 1024 / 1024;
+  std::cout << " Mo" << std::endl;
 
   // print portefeuille
   std::cout << "Portefeuille:" << std::endl;
@@ -217,7 +217,7 @@ void prototype()
 
   // j'execute le kernel
   size_t global_item_size = NB_TIRAGES;
-  size_t local_item_size = 1;
+  size_t local_item_size = 1; // shared
   ret = clEnqueueNDRangeKernel(command_queue,
 			       kernel,
 			       1,
@@ -250,15 +250,22 @@ void prototype()
   // for(int g = 0; g < NB_TIRAGES; g++) {
   //   printf("\tTIRAGES[%d]=%f\n", g, TIRAGES[g]);
   // }
+  std::ofstream fd;
+  fd.open("tirages.data");
+  for(int g = 0; g < NB_TIRAGES; g++) {
+    fd << TIRAGES[g] << std::endl;
+  }
+  fd.close();
   
-  // VaR
+  // VaR gain
   int percentile = NB_TIRAGES * int(1.0 - seuil_confiance);
   std::cout << "Valeur du portefeuille aujourd'hui: " << rendement_portefeuille << std::endl;
   std::cout << "la VaR(" << T << "," << (seuil_confiance * 100);
   std::cout << "%) est de " << TIRAGES[percentile+1] << std::endl;
   
   // je clean
-
+  free(N);
+  free(TIRAGES);
 }
 
 int main(int argc, char *argv[])

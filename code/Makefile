@@ -64,6 +64,12 @@ nef: all
 	@echo "run sur nef"
 	qsub monjob.pbs
 
+plot: all
+	@echo "execution"
+	./$(BINDIR)/$(EXECUTABLE)
+	@echo "plot en cours..."
+	@gnuplot histogram.plot
+
 $(TARGET): makedirs $(OBJS)
 	$(NVIDIA_LINKLINE)
 
