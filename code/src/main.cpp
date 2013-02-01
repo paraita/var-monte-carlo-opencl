@@ -35,7 +35,7 @@ void prototype()
   int T = 1;
   float *N = (float *) calloc(NB_ACTIONS * NB_TIRAGES * T, sizeof(float));
   float *TIRAGES = (float *) calloc(NB_TIRAGES, sizeof(float));
-  std::ifstream t("prototype.cl");
+  std::ifstream t("kernels/prototype.cl");
   std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
   const char *source_str = source.c_str();
   std::cout << "source: " << source << std::endl;
