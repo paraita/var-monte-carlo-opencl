@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <streambuf>
 #include <algorithm>
 #include <string>
 #include <string.h>
@@ -20,30 +21,6 @@
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 #define PRINT_USAGE "Usage: -s S0 -t horizon -v volatilite"
-#define KERNEL_PROTO "__kernel void prototype(__global const float *PORTEFEUILLE, \
-                                              __global const float *ALEA, \
-                                              __global float *TIRAGES, \
-                                              __global int *nb_actions, \
-    					      __global int *horizon) { \
-                                      int i = get_global_id(0); \
-                                      TIRAGES[i] = 0; \
-				      float tmp;\
-				      for(int a=0; a < (*nb_actions);a++) { \
-				        tmp = PORTEFEUILLE[a];\
-				        for(int t=0; t < (*horizon);t++) { \
-					  int index = i * (*nb_actions);\
-					  index += a * (*horizon);\
-					  index += t;\
-					  tmp = tmp*ALEA[index];\
-				         } \
-					TIRAGES[i]+=tmp;\
-				      } \
-				      tmp = 0;\
-				      for(int j=0; j < (*nb_actions); j++) {\
-				        tmp += PORTEFEUILLE[j];\
-				      }\
-				      TIRAGES[i]+=tmp;\
-			   }"
 
 void parse_args(int argc, char** argv, float* s0, float* horizon, float* volat);
 void exemple_addition();
@@ -54,12 +31,14 @@ void prototype()
 {
   const float seuil_confiance = 0.99;
   int NB_ACTIONS = 1;
-  int NB_TIRAGES = 1000;
-  int T = 500;
+  int NB_TIRAGES = 100000;
+  int T = 1;
   float *N = (float *) calloc(NB_ACTIONS * NB_TIRAGES * T, sizeof(float));
   float *TIRAGES = (float *) calloc(NB_TIRAGES, sizeof(float));
-  std::string source = KERNEL_PROTO;
+  std::ifstream t("prototype.cl");
+  std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
   const char *source_str = source.c_str();
+  std::cout << "source: " << source << std::endl;
   size_t source_size = source.size();
   CLManager clm;
   cl_int ret;

@@ -2,8 +2,8 @@ reset
 
 # legendes
 set title "Distribution des pertes"
-set xlabel "freq"
-set ylabel "pertes brutes"
+set xlabel "pertes brutes"
+set ylabel "freq"
 
 # params
 n=100	#number of intervals
