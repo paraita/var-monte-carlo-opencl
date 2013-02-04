@@ -33,8 +33,8 @@ BINDIR  := bin
 OBJDIR  := obj
 
 # Compilers
-CC := g++ -c
-LINK := g++
+CC := clang++ -c
+LINK := clang++
 CFLAGS := -Wno-write-strings -DUNIX
 
 # targets

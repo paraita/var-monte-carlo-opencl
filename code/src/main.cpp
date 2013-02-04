@@ -23,14 +23,13 @@
 #define PRINT_USAGE "Usage: -s S0 -t horizon -v volatilite"
 
 void parse_args(int argc, char** argv, float* s0, float* horizon, float* volat);
-void exemple_addition();
-void exemple_2(int argc, char *argv[]);
 void prototype();
 
 void calcul() {
-  // creer le portefeuille
   
-
+  CLManager clm;
+  std::cout << clm.printPlatform();
+  clm.init(0,0);
 }
 
 int main(int argc, char *argv[])
@@ -40,7 +39,9 @@ int main(int argc, char *argv[])
   
   //exemple_2(argc, argv);
 
-  prototype();
+  //prototype();
+  
+  calcul();
   
   return 0;
 }

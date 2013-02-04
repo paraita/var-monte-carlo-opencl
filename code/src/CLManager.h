@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -20,17 +22,21 @@
 class CLManager {
 
  public:
-  void printPlatform();
+  CLManager();
+  std::string printPlatform();
   void loadKernel(const std::string, const char **, size_t *);
-  void init(const cl_device_id, cl_context *, cl_command_queue *);
+  void init(const int platform, const int device);
   void clean();
   cl_program compileKernel();
   void setKernelArg();
   void executeKernel();
-  void getAllPlatforms(cl_uint *, cl_platform_id **);
-  void getAllDevicesByPlatform(cl_platform_id, cl_uint *, cl_device_id **);
   void check(const cl_int, const std::string);
  private:
+  cl_device_id titoi;
+  std::vector<cl_platform_id> platforms;
+  std::vector< std::vector<cl_device_id> > devices;
+  cl_context context;
+  cl_command_queue command_queue;
   void err_check(const cl_int, const std::string, const bool);
 };
 
