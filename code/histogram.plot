@@ -24,3 +24,6 @@ set style fill solid 0.5	#fillstyle
 set tics out nomirror
 
 plot "tirages.data" u (hist($1,width)):(1.0) smooth freq w boxes lc rgb"green" notitle
+
+# sous linux ca permet de ne pas fermer la fenetre immediatement
+pause -1
