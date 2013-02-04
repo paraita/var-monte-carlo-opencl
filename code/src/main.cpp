@@ -27,6 +27,12 @@ void exemple_addition();
 void exemple_2(int argc, char *argv[]);
 void prototype();
 
+void calcul() {
+  // creer le portefeuille
+  
+
+}
+
 int main(int argc, char *argv[])
 {
 
