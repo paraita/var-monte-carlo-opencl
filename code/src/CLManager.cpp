@@ -61,7 +61,7 @@ CLManager::CLManager() : platforms(),
     std::vector<cl_device_id> d_device;
     for (int j = 0; j < numDevices; j++) {
       d_device.push_back(d[j]);
-      titoi = d[j];
+      //titoi = d[j];
     }
     // le vector des plateformes est indiced pareil que celui des devices
     devices.push_back(d_device);
@@ -197,6 +197,19 @@ std::string CLManager::printPlatform() {
   return res.str();
 }
 
+void CLManager::loadKernels(const std::string chemin) {
 
+  std::ifstream t(chemin);
+  std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+  const char *source_str = source.c_str();
+  size_t source_size = source.size();
+
+  program = clCreateProgramWithSource(context,
+  						 1,
+  						 &source_str,
+  						 &source_size,
+  						 &ret);
+  
+}
 
 

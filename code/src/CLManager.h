@@ -23,21 +23,21 @@ class CLManager {
 
  public:
   CLManager();
-  std::string printPlatform();
-  void loadKernel(const std::string, const char **, size_t *);
-  void init(const int platform, const int device);
+  std::string printPlatform(); // ok
+  void loadKernels(const std::string);
+  void init(const int platform, const int device); // ok
   void clean();
   cl_program compileKernel();
   void setKernelArg();
   void executeKernel();
-  void check(const cl_int, const std::string);
+  void check(const cl_int, const std::string); // ok
  private:
   cl_device_id titoi;
   std::vector<cl_platform_id> platforms;
   std::vector< std::vector<cl_device_id> > devices;
   cl_context context;
   cl_command_queue command_queue;
-  void err_check(const cl_int, const std::string, const bool);
+  void err_check(const cl_int, const std::string, const bool); // ok
 };
 
 
