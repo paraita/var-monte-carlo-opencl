@@ -37,6 +37,9 @@ CLManager::CLManager() : platforms(),
   cl_uint numDevices = 0;
   cl_platform_id *p = NULL;
   cl_device_id *d = NULL;
+  ev_end_time = 0;
+  ev_start_time = 0;
+  debug_mode = DISABLE_PROFILING;
   resultat = NULL;
   size_resultat = 0;
   
@@ -88,12 +91,22 @@ void CLManager::init(const int platform, const int device) {
   platform_no = platform;
   cl_int err = 0;
   cl_device_id d = (devices[platform])[device];
-  
+
   context = clCreateContext( NULL, 1, &d, NULL, NULL, &err);
   err_check(err, "creation du contexte opencl", true);
   
-  command_queue = clCreateCommandQueue(context, d, 0, &err);
+  if (debug_mode) {
+    command_queue = clCreateCommandQueue(context, d, CL_QUEUE_PROFILING_ENABLE, &err);
+  }
+  else {
+    command_queue = clCreateCommandQueue(context, d, 0, &err);
+  }
   err_check(err, "creation de la command queue", true);
+}
+
+void CLManager::init(const int platform, const int device, profiling_status debug) {
+  debug_mode = debug;
+  init(platform,device);
 }
 
 void CLManager::check(const cl_int status,
@@ -299,7 +312,19 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
   size_t local_item_size = 1;
   cl_kernel k = kernels[kernel];
 
-  err = clEnqueueNDRangeKernel(command_queue,
+  if (debug_mode) {
+    err = clEnqueueNDRangeKernel(command_queue,
+			       k,
+			       1,
+			       NULL,
+			       &global_item_size,
+			       &local_item_size,
+			       0,
+			       NULL,
+			       &prof_event);
+  }
+  else {
+    err = clEnqueueNDRangeKernel(command_queue,
 			       k,
 			       1,
 			       NULL,
@@ -308,6 +333,7 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
 			       0,
 			       NULL,
 			       NULL);
+  }
   err_check(err, "execution du kernel", true);
 }
 
@@ -327,6 +353,27 @@ void CLManager::getResultat() {
 			    NULL,
 			    NULL);
   err_check(err, "recuperation du resultat", true);
+}
+
+float CLManager::getGpuTime() {
+  cl_int err;
+  float resultat = 0;
+  if (debug_mode) {
+    err = clWaitForEvents(1, &prof_event);
+    err |= clGetEventProfilingInfo(prof_event,
+				   CL_PROFILING_COMMAND_START,
+				   sizeof(cl_ulong),
+				   &ev_start_time,
+				   NULL);
+    err |= clGetEventProfilingInfo(prof_event,
+				   CL_PROFILING_COMMAND_END,
+				   sizeof(cl_ulong),
+				   &ev_end_time,
+				   NULL);
+    err_check(err, "profiling dans getGpuTime()", true);
+    resultat = (ev_end_time - ev_start_time) / 1000000.0;
+  }
+  return resultat;
 }
 
 // vide les ref sur les parametres

@@ -39,7 +39,7 @@ CFLAGS := -Wno-write-strings -DUNIX
 
 # targets
 EXECUTABLE := pfe
-SRC := CLManager.cpp main.cpp
+SRC := Actif.cpp Portefeuille.cpp CLManager.cpp main.cpp
 OBJS := $(SRC:.cpp=.o)
 LOBJS := $(patsubst %.o,$(OBJDIR)/%.o,$(OBJS))
 
@@ -66,7 +66,7 @@ nef: all
 
 plot: all
 	@echo "execution"
-	./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 10000 -p 1 -t 1
+	./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 100000 -p ./portefeuille.csv -t 1
 	@echo "plot en cours..."
 	@gnuplot histogram.plot
 

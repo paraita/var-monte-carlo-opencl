@@ -18,13 +18,14 @@
 #include <CL/cl.h>
 #endif
 #include "CLManager.h"
+#include "Portefeuille.h"
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
-#define PRINT_USAGE "Usage: -c seuil_confiance -n nb_tirages -p portefeuille -t horizon"
+#define PRINT_USAGE "Usage: -c seuil_confiance -n nb_tirages -p portefeuille -t horizon [-b]"
 
 
-bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std::string* p,int* horizon);
-void calcul(float seuil_confiance,int nb_tirages,std::string portefeuille,int T);
+bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std::string* p,int* horizon, bool* batch_mode);
+void calcul(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool batch_mode);
 
 int main(int argc, char *argv[])
 {
@@ -33,76 +34,64 @@ int main(int argc, char *argv[])
   int nb_tirages = 0;
   std::string portefeuille;
   int horizon = 0;
+  bool batch_mode = false;
   
   // verif des parametres
-  param_ok = parse_args(argc, argv, &seuil_confiance, &nb_tirages, &portefeuille, &horizon);
+  param_ok = parse_args(argc,
+			argv,
+			&seuil_confiance,
+			&nb_tirages,
+			&portefeuille,
+			&horizon,
+			&batch_mode);
   
-  // if (param_ok) {
-  //   printf("Parametres:\n\tseuil de confiance:%f\n\tnb tirages:%d\n\thorizon:%d\n\tchemin portefeuille:%s\n",
-  // 	   seuil_confiance,nb_tirages,horizon, portefeuille.c_str());
-  //   calcul(seuil_confiance, nb_tirages, portefeuille, horizon);
-  //   return EXIT_SUCCESS;
-  // }
-  // else {
-  //   std::cout << PRINT_USAGE << std::endl;
-  //   return EXIT_FAILURE;
-  // }
+  if (param_ok) {
+    calcul(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    return EXIT_SUCCESS;
+  }
+  else {
+    std::cout << PRINT_USAGE << std::endl;
+    return EXIT_FAILURE;
+  }
 }
 
-void calcul(float seuil_confiance, int nb_tirages, std::string portefeuille, int T) {
-  CLManager clm;
-  std::cout << clm.printPlatform();
-  clm.init(0,0);
-  clm.loadKernels("kernels/prototype.cl");
-  clm.compileKernel("prototype");
-  
-  int NB_ACTIONS = 10;
+void calcul(float seuil_confiance,
+	    int nb_tirages,
+	    std::string portefeuille,
+	    int T,
+	    bool batch_mode) {
+  Portefeuille P(portefeuille);
+  float *RENDEMENTS = P.getRendements();
+  float *VOLS = P.getVolatilites();
+  float *TI = P.getTauxInterets();
+  int NB_ACTIONS = P.getTaille();
+  // ~~~~~~~~~~~~~~~~~~~~~~ RNG ~~~~~~~~~~~~~~~~~~~~~~~
   float *N = (float *) calloc(NB_ACTIONS * nb_tirages * T, sizeof(float));
   float *TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
-  
-  float P[NB_ACTIONS];
-  P[0] = 123.0;
-  P[1] = 99.0;
-  P[2] = 100.0;
-  P[3] = 54.0;
-  P[4] = 18.0;
-  P[5] = 6.0;
-  P[6] = 13.0;
-  P[7] = 67.0;
-  P[8] = 589.0;
-  P[9] = 64.0;
-
-  // print portefeuille
-  std::cout << "Portefeuille:" << std::endl;
-  float rendement_portefeuille = 0;
-  for(int g = 0; g < NB_ACTIONS; g++) {
-    printf("\tP[%d]=%f\n", g, P[g]);
-    rendement_portefeuille += P[g];
-  }
-  
-  // ~~~~~~~~~~~~~~~~~~~~~~ RNG ~~~~~~~~~~~~~~~~~~~~~~~
   boost::mt19937 rng;
   boost::normal_distribution<> nd(0.0, 1.0);
   boost::variate_generator< boost::mt19937&, boost::normal_distribution<> > var_nor(rng, nd);
   for(int g = 0; g < NB_ACTIONS * nb_tirages * T; g++) {
     N[g] = var_nor();
   }
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  // ~~~~~~~~~~~~~~~~~~~~~ params ~~~~~~~~~~~~~~~~~~~~~
-  clm.setKernelArg("prototype",0,NB_ACTIONS,sizeof(float),P,false);
-  clm.setKernelArg("prototype", 1, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
-  clm.setKernelArg("prototype", 2, nb_tirages, sizeof(float), TIRAGES, true); // sortie
-  clm.setKernelArg("prototype", 3, 1, sizeof(int), &NB_ACTIONS, false);
-  clm.setKernelArg("prototype", 4, 1, sizeof(int), &T, false);
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
+  CLManager clm;
+  std::string nom_kernel("calcul_trajectoires");
+  clm.init(0,0,ENABLE_PROFILING);
+  clm.loadKernels("kernels/var-mc.cl");
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
+  clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
+  clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
+  clm.setKernelArg(nom_kernel, 3, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
+  clm.setKernelArg(nom_kernel, 4, nb_tirages, sizeof(float), TIRAGES, true); // sortie
+  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false);
 
   // run sur le GPU
-  clm.executeKernel(nb_tirages, "prototype");
-
+  clm.executeKernel(nb_tirages, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
-
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
   std::sort(TIRAGES, TIRAGES+nb_tirages);
   // graph
@@ -114,22 +103,24 @@ void calcul(float seuil_confiance, int nb_tirages, std::string portefeuille, int
   fd.close();
   int percentile = nb_tirages * int(1.0 - seuil_confiance);
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  std::cout << "Valeur du portefeuille aujourd’hui: " << rendement_portefeuille << std::endl;
-  std::cout << "la VaR(" << T << "," << (seuil_confiance * 100);
-  std::cout << "%) est de " << TIRAGES[percentile+1] << std::endl;
+  if (batch_mode) {
+    printf("%d;%f;%f\n", nb_tirages, TIRAGES[percentile+1], clm.getGpuTime());
+  }
+  else {
+    std::cout << "Valeur du portefeuille aujourd’hui: " << P.getRendement() << std::endl;
+    std::cout << "la VaR(" << T << "," << (seuil_confiance * 100);
+    std::cout << "%) est de " << TIRAGES[percentile+1] << std::endl;
+    printf("Temps sur GPU: %f ms\n", clm.getGpuTime());
+  }
 }
-
-
-
-
 
 bool parse_args(int argc,
 		char** argv,
 		float* seuil_confiance,
 		int* nb_tirages,
 		std::string* p,
-		int* horizon)
+		int* horizon,
+		bool* batch_mode)
 {
   // affiche l'aide et le hardware dispo sur la machine
   if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0)) {
@@ -139,7 +130,7 @@ bool parse_args(int argc,
     return false;
   }
   else {
-    if (argc != 9) {
+    if (argc < 9 || argc > 10) {
       std::cout << "\tpas le bon nombre de params ! (" << argc << ")" << std::endl;
       return false;
     }
@@ -149,6 +140,7 @@ bool parse_args(int argc,
       bool _nb_tirages_ok = false;
       bool _p_ok = false;
       bool _horizon_ok = false;
+      bool _batch_mode_ok = false;
       for (int i = 1; i < argc; i++) {
 	// parametre: seuil de confiance
 	if (strcmp(argv[i], "-c") == 0) {
@@ -198,6 +190,19 @@ bool parse_args(int argc,
 	    continue;
 	  }
 	}
+	// parametre: batch mode
+	if (strcmp(argv[i], "-b") == 0) {
+	  if (_batch_mode_ok) {
+	    std::cout << "\terreur batch mode" << std::endl;
+	    return false;
+	  }
+	  else {
+	    i = i + 1;
+	    *batch_mode = true;
+	    _batch_mode_ok = true;
+	    continue;
+	  }
+	}
       }
       // est ce qu'on a tout les parametres ?
       if (!_seuil_confiance_ok ||
@@ -210,7 +215,7 @@ bool parse_args(int argc,
       else {
 	// est ce que les parametres sont valides ?
 	if ( *seuil_confiance < 1 &&
-	     *seuil_confiance > 0 &&
+				*seuil_confiance > 0 &&
 	     *nb_tirages > 0 &&
 	     *horizon > 0) {
 	  return true;

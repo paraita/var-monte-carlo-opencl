@@ -18,6 +18,9 @@
 #else
 #include <CL/cl.h>
 #endif
+#define ENABLE_PROFILING true
+#define DISABLE_PROFILING false
+typedef bool profiling_status;
 
 class CLManager {
 
@@ -27,6 +30,7 @@ class CLManager {
   std::string printPlatform(); // ok
   void loadKernels(const char*); // ok
   void init(const int, const int); // ok
+  void init(const int, const int, profiling_status debug); // ok
   void compileKernel(const std::string); // ok
   void setKernelArg(const std::string,
 		    const unsigned int,
@@ -36,6 +40,7 @@ class CLManager {
 		    const bool); // ok
   void executeKernel(const int, const std::string); // ok
   void getResultat(); // ok
+  float getGpuTime(); // ok
   void check(const cl_int, const std::string); // ok
   void reset(); // ok
  private:
@@ -51,6 +56,10 @@ class CLManager {
   cl_context context;
   cl_command_queue command_queue;
   cl_program program;
+  profiling_status debug_mode;
+  cl_event prof_event;
+  cl_ulong ev_start_time;
+  cl_ulong ev_end_time;
   void cleanCL(); // ok
   void err_check(const cl_int, const std::string, const bool); // ok
 };

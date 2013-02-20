@@ -6,9 +6,9 @@ set xlabel "pertes brutes"
 set ylabel "freq"
 
 # params
-n=100	#number of intervals
-max=5000.	#max value
-min=-5000.	#min value
+n=100000	#number of intervals
+max=700.	#max value
+min=680.	#min value
 width=(max-min)/n	#interval width
 
 # fonction histogramme
