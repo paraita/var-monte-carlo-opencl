@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <map>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -17,12 +18,18 @@
 
 // constructeur par defaut
 CLManager::CLManager() : platforms(),
-			 devices() {
+			 devices(),
+			 device_no(0),
+			 platform_no(0),
+			 buff_mems(),
+			 output_buff_mem_pos(0) {
   cl_int err = 0;
   cl_uint numPlatforms = 0;
   cl_uint numDevices = 0;
   cl_platform_id *p = NULL;
   cl_device_id *d = NULL;
+  resultat = NULL;
+  size_resultat = 0;
   cl_uint deviceMaxCU = 0;
   size_t deviceMaxWG = 0;
   
@@ -61,7 +68,6 @@ CLManager::CLManager() : platforms(),
     std::vector<cl_device_id> d_device;
     for (int j = 0; j < numDevices; j++) {
       d_device.push_back(d[j]);
-      //titoi = d[j];
     }
     // le vector des plateformes est indiced pareil que celui des devices
     devices.push_back(d_device);
@@ -73,6 +79,8 @@ CLManager::CLManager() : platforms(),
 
 // cree le contexte et la command queue
 void CLManager::init(const int platform, const int device) {
+  device_no = device;
+  platform_no = platform;
   cl_int err = 0;
   cl_device_id d = (devices[platform])[device];
   
@@ -197,19 +205,138 @@ std::string CLManager::printPlatform() {
   return res.str();
 }
 
-void CLManager::loadKernels(const std::string chemin) {
+void CLManager::loadKernels(const char* chemin) {
 
-  std::ifstream t(chemin);
-  std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+  // TODO verifier que devices et platforms sont pas vide
+  
+  // recup des kernels
+  cl_int err = 0;
+  std::ifstream fichier(chemin);
+  std::string source((std::istreambuf_iterator<char>(fichier)), std::istreambuf_iterator<char>());
   const char *source_str = source.c_str();
   size_t source_size = source.size();
 
-  program = clCreateProgramWithSource(context,
-  						 1,
-  						 &source_str,
-  						 &source_size,
-  						 &ret);
-  
+  std::cout << "\nfichier a charger:---------------" << std::endl;
+  std::cout << source << std::endl;
+  std::cout << "---------------------------------" << std::endl;
+
+  // creation du programme
+  program = clCreateProgramWithSource(context, 1, &source_str, &source_size, &err);
+  err_check(err, "creation du cl_program", true);
+
+  // compilation du programme
+  cl_device_id d = (devices[platform_no])[device_no];
+  err = clBuildProgram(program, 1, &d, NULL, NULL, NULL);
+  err_check(err, "compilation du cl_program", true);
 }
 
+void CLManager::compileKernel(const std::string nom_kernel) {
+  cl_int err = 0;
+  cl_kernel k = clCreateKernel(program, nom_kernel.c_str(), &err);
+  err_check(err, "creation d'un kernel", true);
+  kernels.insert(make_pair(nom_kernel, k));
+  std::cout << "compilation du kernel:" << k << std::endl;
+}
 
+void CLManager::setKernelArg(const std::string kernel,
+			     const unsigned int no,
+			     const int nb_elements,
+			     const size_t taille_element,
+			     void * arg,
+			     const bool is_resultat) {
+
+  // TODO verifier que devices,platforms et kernels sont pas vides
+
+  cl_int err = 0;
+  cl_kernel k = kernels[kernel];
+  cl_mem mem_arg = NULL;
+
+  // cas particulier pour le buffer de sortie
+  if (is_resultat) {
+    mem_arg = clCreateBuffer(context,
+			     CL_MEM_WRITE_ONLY,
+			     nb_elements * taille_element,
+			     NULL,
+			     &err);
+    err_check(err, "creation du buffer", true);
+    resultat = arg;
+    output_buff_mem_pos = no;
+    size_resultat = nb_elements * taille_element;
+  }
+  else {
+    mem_arg = clCreateBuffer(context,
+			     CL_MEM_READ_ONLY,
+			     nb_elements * taille_element,
+			     NULL,
+			     &err);
+    err_check(err, "creation du buffer", true);
+    err = clEnqueueWriteBuffer(command_queue,
+			       mem_arg,
+			       CL_TRUE,
+			       0,
+			       nb_elements * taille_element,
+			       arg,
+			       0,
+			       NULL,
+			       NULL);
+    err_check(err, "copie du param dans le buffer associe", true);
+  }
+  err = clSetKernelArg(k, no, sizeof(mem_arg), (void *)&mem_arg);
+  err_check(err, "clSetKernelArg()", true);
+  buff_mems.push_back(mem_arg);
+}
+
+void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
+
+  // TODO verification (devices, params, kernels, sortie)
+  
+  cl_int err = 0;
+  size_t global_item_size = nb_tirages;
+  size_t local_item_size = 1;
+  cl_kernel k = kernels[kernel];
+
+  err = clEnqueueNDRangeKernel(command_queue,
+			       k,
+			       1,
+			       NULL,
+			       &global_item_size,
+			       &local_item_size,
+			       0,
+			       NULL,
+			       NULL);
+  err_check(err, "execution du kernel", true);
+}
+
+void CLManager::getResultat() {
+
+  // TODO verification (resultat, mem_resultat, size_resultat)
+  
+  cl_int err = 0;
+  cl_mem buff_resultat = buff_mems[output_buff_mem_pos];
+  err = clEnqueueReadBuffer(command_queue,
+			    buff_resultat,
+			    CL_TRUE,
+			    0,
+			    size_resultat,
+			    resultat,
+			    0,
+			    NULL,
+			    NULL);
+  err_check(err, "recuperation du resultat", true);
+}
+
+// vide les ref sur les parametres
+void CLManager::reset() {
+  size_resultat = 0;
+  resultat = NULL;
+  output_buff_mem_pos = 0;
+  int cnt = 0;
+  for (cnt = 0; cnt < buff_mems.size(); cnt++) {
+    cl_mem m = buff_mems[cnt];
+    clReleaseMemObject(m);
+  }
+  buff_mems.clear();
+}
+  
+  
+  
