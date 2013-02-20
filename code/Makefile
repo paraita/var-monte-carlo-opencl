@@ -66,7 +66,7 @@ nef: all
 
 plot: all
 	@echo "execution"
-	./$(BINDIR)/$(EXECUTABLE)
+	./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 10000 -p 1 -t 1
 	@echo "plot en cours..."
 	@gnuplot histogram.plot
 
@@ -76,7 +76,6 @@ $(TARGET): makedirs $(OBJS)
 makedirs:
 	@mkdir -p $(OBJDIR)
 	@mkdir -p $(BINDIR)
-	@cp $(SRCDIR)/test_addition.cl $(BINDIR)/test_addition.cl
 
 clean:
 	@echo "uoti, ma ro'a !"

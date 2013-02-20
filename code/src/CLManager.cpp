@@ -16,12 +16,21 @@
 #endif
 #include "CLManager.h"
 
+// destructor
+CLManager::~CLManager() {
+  cleanCL();
+  kernels.clear();
+  buff_mems.clear();
+  devices.clear();
+  platforms.clear();
+}
+
 // constructeur par defaut
 CLManager::CLManager() : platforms(),
 			 devices(),
+			 buff_mems(),
 			 device_no(0),
 			 platform_no(0),
-			 buff_mems(),
 			 output_buff_mem_pos(0) {
   cl_int err = 0;
   cl_uint numPlatforms = 0;
@@ -30,8 +39,6 @@ CLManager::CLManager() : platforms(),
   cl_device_id *d = NULL;
   resultat = NULL;
   size_resultat = 0;
-  cl_uint deviceMaxCU = 0;
-  size_t deviceMaxWG = 0;
   
   // je recup le nombre de plateformes dispo
   err = clGetPlatformIDs(0, NULL, &numPlatforms);
@@ -52,7 +59,6 @@ CLManager::CLManager() : platforms(),
   }
 
   // je recup tous les devices des plateformes
-  size_t paramSize = 0;
   for (int i = 0; i < platforms.size(); i++) {
     
     // je recup le nombre de devices sur cette plateforme
@@ -72,7 +78,6 @@ CLManager::CLManager() : platforms(),
     // le vector des plateformes est indiced pareil que celui des devices
     devices.push_back(d_device);
   }
-  
   free(p);
   free(d);
 }
@@ -216,9 +221,9 @@ void CLManager::loadKernels(const char* chemin) {
   const char *source_str = source.c_str();
   size_t source_size = source.size();
 
-  std::cout << "\nfichier a charger:---------------" << std::endl;
-  std::cout << source << std::endl;
-  std::cout << "---------------------------------" << std::endl;
+  // std::cout << "\nfichier a charger:---------------" << std::endl;
+  // std::cout << source << std::endl;
+  // std::cout << "---------------------------------" << std::endl;
 
   // creation du programme
   program = clCreateProgramWithSource(context, 1, &source_str, &source_size, &err);
@@ -235,7 +240,6 @@ void CLManager::compileKernel(const std::string nom_kernel) {
   cl_kernel k = clCreateKernel(program, nom_kernel.c_str(), &err);
   err_check(err, "creation d'un kernel", true);
   kernels.insert(make_pair(nom_kernel, k));
-  std::cout << "compilation du kernel:" << k << std::endl;
 }
 
 void CLManager::setKernelArg(const std::string kernel,
@@ -327,16 +331,39 @@ void CLManager::getResultat() {
 
 // vide les ref sur les parametres
 void CLManager::reset() {
+  cl_int err = 0;
   size_resultat = 0;
   resultat = NULL;
   output_buff_mem_pos = 0;
   int cnt = 0;
   for (cnt = 0; cnt < buff_mems.size(); cnt++) {
     cl_mem m = buff_mems[cnt];
-    clReleaseMemObject(m);
+    err = clReleaseMemObject(m);
+    err_check(err, "release des buff mem", true);
   }
   buff_mems.clear();
 }
-  
-  
+
+// free sur les ressources OpenCL
+void CLManager::cleanCL() {
+  cl_int err = 0;
+  err = clFlush(command_queue);
+  err_check(err, "flush de la command_queue", true);
+  err = clFinish(command_queue);
+  err_check(err, "finish de la command_queue", true);
+  std::map< std::string, cl_kernel >::iterator it;
+  for(std::map< std::string, cl_kernel >::iterator it = kernels.begin();
+      it != kernels.end();
+      ++it) {
+    err = clReleaseKernel(it->second);
+    err_check(err, "release du kernel " + it->first, true);
+  }
+  err = clReleaseProgram(program);
+  err_check(err, "release du program", true);
+  reset();
+  err = clReleaseCommandQueue(command_queue);
+  err_check(err, "release de la command_queue", true);
+  err = clReleaseContext(context);
+  err_check(err, "release du contexte", true);
+}
   

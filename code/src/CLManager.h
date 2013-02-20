@@ -23,7 +23,7 @@ class CLManager {
 
  public:
   CLManager(); // ok
-  //~CLManager(); // TODO
+  ~CLManager(); // ok
   std::string printPlatform(); // ok
   void loadKernels(const char*); // ok
   void init(const int, const int); // ok
@@ -39,18 +39,19 @@ class CLManager {
   void check(const cl_int, const std::string); // ok
   void reset(); // ok
  private:
-  unsigned int device_no;
-  unsigned int platform_no;
   void * resultat;
-  unsigned int output_buff_mem_pos;
   size_t size_resultat;
   std::map< std::string, cl_kernel > kernels;
   std::vector<cl_platform_id> platforms;
   std::vector< std::vector<cl_device_id> > devices;
   std::vector<cl_mem> buff_mems;
+  unsigned int device_no;
+  unsigned int platform_no;
+  unsigned int output_buff_mem_pos;
   cl_context context;
   cl_command_queue command_queue;
   cl_program program;
+  void cleanCL(); // ok
   void err_check(const cl_int, const std::string, const bool); // ok
 };
 
