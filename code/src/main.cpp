@@ -29,7 +29,7 @@ bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std:
 // RNG sur CPU, calcul trajectoires sur GPU, VaR sur CPU
 void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool batch_mode);
 // RNG sur GPU, calcul trajectoires sur GPU, VaR sur CPU
-void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T);
+void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 
 
 int main(int argc, char *argv[])
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 			&batch_mode);
   
   if (param_ok) {
-    calcul2(seuil_confiance,nb_tirages,portefeuille,horizon);
+    calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     return EXIT_SUCCESS;
   }
   else {
@@ -63,13 +63,34 @@ int main(int argc, char *argv[])
 void calcul2(float seuil_confiance,
 	    int nb_tirages,
 	    std::string portefeuille,
-	    int T) {
+	    int T,
+      bool batch_mode) {
   Portefeuille P(portefeuille);
   float *RENDEMENTS = P.getRendements();
   float *VOLS = P.getVolatilites();
   float *TI = P.getTauxInterets();
   int NB_ACTIONS = P.getTaille();
   
+  // debug
+  if (batch_mode)
+  {
+    std::cout << "Mémoire utilisée:" << std::endl;
+    int taille_rendements = sizeof(float) * NB_ACTIONS;
+    std::cout << "\tRENDEMENTS: " << taille_rendements << " octets" << std::endl;
+    int taille_vols = sizeof(float) * NB_ACTIONS;
+    std::cout << "\tVOLS: " << taille_vols << " octets" << std::endl;
+    int taille_ti = sizeof(float) * NB_ACTIONS;
+    std::cout << "\tTI: " << taille_ti << " octets" << std::endl;
+    int taille_n = sizeof(float) * NB_ACTIONS * T  * nb_tirages;
+    std::cout << "\tN: " << taille_n << " octets" << std::endl;
+    int taille_nb_actions = sizeof(int);
+    std::cout << "\tvariable nb_actions: " << taille_nb_actions << " octets" << std::endl;
+    int taille_horizon = sizeof(int);
+    std::cout << "\tvariable horizon: " << taille_horizon << " octets" << std::endl;
+    int total = taille_rendements + taille_vols + taille_ti + taille_n + taille_nb_actions + taille_horizon;
+    std::cout << "\tTOTAL: " << total / 1000000.0 << " Mo" << std::endl;
+  }
+
   // ~~~~~~~~~~~~~~~~~~~~~~ RNG ~~~~~~~~~~~~~~~~~~~~~~~
   boost::chrono::high_resolution_clock::time_point start_rng = boost::chrono::high_resolution_clock::now();
   float *N = (float *) calloc(NB_ACTIONS * nb_tirages * T, sizeof(float));
@@ -186,6 +207,7 @@ bool parse_args(int argc,
   // affiche l'aide et le hardware dispo sur la machine
   if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0)) {
     CLManager clm;
+    clm.init(0,0);
     std::cout << "Plateformes disponibles:" << std::endl;
     std::cout << clm.printPlatform() << std::endl;
     return false;

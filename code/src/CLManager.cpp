@@ -37,6 +37,7 @@ CLManager::CLManager() : platforms(),
   cl_uint numDevices = 0;
   cl_platform_id *p = NULL;
   cl_device_id *d = NULL;
+  program_loaded = false;
   ev_end_time = 0;
   ev_start_time = 0;
   debug_mode = DISABLE_PROFILING;
@@ -138,6 +139,8 @@ std::string CLManager::printPlatform() {
   char *deviceDriverVersion = NULL;
   cl_uint deviceMaxCU = 0;
   size_t deviceMaxWG = 0;
+  cl_ulong deviceGlobalMemCacheSize = 0;
+  cl_ulong deviceGlobalMemSize = 0;
 
   for (unsigned int i = 0; i < platforms.size(); i++) {
 
@@ -205,12 +208,22 @@ std::string CLManager::printPlatform() {
       err = clGetDeviceInfo(d[j], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &deviceMaxWG, NULL);
       err_check(err, "recup du WG du device", true);
 
+      // recup de la taille de la global
+      err = clGetDeviceInfo(d[j], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &deviceGlobalMemSize, NULL);
+      err_check(err, "recup de la taille de la global mem du device", true);
+      
+      // recup de la taille de la global cached
+      err = clGetDeviceInfo(d[j], CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &deviceGlobalMemCacheSize, NULL);
+      err_check(err, "recup de la taille de la global mem cached du device", true);
+
       res << "\t[" << j << "]Device: " << deviceName << " - " << deviceVendor << std::endl;
       res << "\t\tVersion OpenCL supportee: " << deviceVersion << std::endl;
       res << "\t\tVersion Driver: " << deviceDriverVersion << std::endl;
-      res << "\t\tTaille Compute Units:" << deviceMaxCU << std::endl;
-      res << "\t\tTaille Max Work Group:" << deviceMaxWG << std::endl;
-
+      res << "\t\tTaille Compute Units: " << deviceMaxCU << std::endl;
+      res << "\t\tTaille Max Work Group: " << deviceMaxWG << std::endl;
+      res << "\t\tTaille Global Mem: " << deviceGlobalMemSize << " octets" << std::endl;
+      res << "\t\tTaille Global Mem Cache: " << deviceGlobalMemCacheSize << " octets" << std::endl;
+      
       free(deviceName);
       free(deviceVendor);
       free(deviceDriverVersion);
@@ -246,6 +259,7 @@ void CLManager::loadKernels(const char* chemin) {
   cl_device_id d = (devices[platform_no])[device_no];
   err = clBuildProgram(program, 1, &d, NULL, NULL, NULL);
   err_check(err, "compilation du cl_program", true);
+  program_loaded = true;
 }
 
 void CLManager::compileKernel(const std::string nom_kernel) {
@@ -308,8 +322,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
   // TODO verification (devices, params, kernels, sortie)
   
   cl_int err = 0;
-  size_t global_item_size = nb_tirages;
-  size_t local_item_size = 1;
+  size_t global_item_size[1] = { nb_tirages };
+  size_t local_item_size[1] = { 32 };
   cl_kernel k = kernels[kernel];
 
   if (debug_mode) {
@@ -317,8 +331,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
 			       k,
 			       1,
 			       NULL,
-			       &global_item_size,
-			       &local_item_size,
+			       global_item_size,
+			       local_item_size,
 			       0,
 			       NULL,
 			       &prof_event);
@@ -328,13 +342,14 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
 			       k,
 			       1,
 			       NULL,
-			       &global_item_size,
-			       &local_item_size,
+			       global_item_size,
+			       local_item_size,
 			       0,
 			       NULL,
 			       NULL);
   }
   err_check(err, "execution du kernel", true);
+  // pour profiling
   err = clFinish(command_queue);
   err_check(err, "finish de la command_queue", true);
 }
@@ -407,8 +422,10 @@ void CLManager::cleanCL() {
     err = clReleaseKernel(it->second);
     err_check(err, "release du kernel " + it->first, true);
   }
-  err = clReleaseProgram(program);
-  err_check(err, "release du program", true);
+  if (program_loaded) {
+    err = clReleaseProgram(program);
+    err_check(err, "release du program", true);
+  }
   reset();
   err = clReleaseCommandQueue(command_queue);
   err_check(err, "release de la command_queue", true);
