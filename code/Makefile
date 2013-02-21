@@ -20,7 +20,7 @@ OPENCL_LIB_LINUX := -lOpenCL -lboost_chrono -lboost_system
 ifeq ($(shell uname), Linux)
 OPENCL_LIB       := $(OPENCL_LIB_LINUX)
 BOOST_INC	 :=
-BOOST_LIB	 :=
+BOOST_LIB	 := -lOpenCL -lboost_chrono -lboost_system
 else
 OPENCL_LIB       := $(OPENCL_LIB_OSX)
 BOOST_INC	 := $(BOOST_INC_OSX)
@@ -64,6 +64,28 @@ nef: all
 	@echo "run sur nef"
 	qsub monjob.pbs
 
+bench: all
+	@echo "run 1/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 2/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 3/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 4/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 5/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 6/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 7/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 8/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 9/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "run 10/10"
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	@echo "fin"
 
 plot: all
 	@echo "execution"

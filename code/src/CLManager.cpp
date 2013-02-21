@@ -322,8 +322,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
   // TODO verification (devices, params, kernels, sortie)
   
   cl_int err = 0;
-  size_t global_item_size = nb_tirages;
-  size_t local_item_size = 1;
+  size_t global_item_size[1] = { nb_tirages };
+  size_t local_item_size[1] = { 32 };
   cl_kernel k = kernels[kernel];
 
   if (debug_mode) {
@@ -331,8 +331,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
 			       k,
 			       1,
 			       NULL,
-			       &global_item_size,
-			       &local_item_size,
+			       global_item_size,
+			       local_item_size,
 			       0,
 			       NULL,
 			       &prof_event);
@@ -342,8 +342,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
 			       k,
 			       1,
 			       NULL,
-			       &global_item_size,
-			       &local_item_size,
+			       global_item_size,
+			       local_item_size,
 			       0,
 			       NULL,
 			       NULL);
