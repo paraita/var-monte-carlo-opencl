@@ -186,6 +186,7 @@ bool parse_args(int argc,
   // affiche l'aide et le hardware dispo sur la machine
   if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0)) {
     CLManager clm;
+    clm.init(0,0);
     std::cout << "Plateformes disponibles:" << std::endl;
     std::cout << clm.printPlatform() << std::endl;
     return false;

@@ -60,6 +60,7 @@ class CLManager {
   cl_event prof_event;
   cl_ulong ev_start_time;
   cl_ulong ev_end_time;
+  bool program_loaded;
   void cleanCL(); // ok
   void err_check(const cl_int, const std::string, const bool); // ok
 };
