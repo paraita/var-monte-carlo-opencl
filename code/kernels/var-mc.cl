@@ -14,7 +14,7 @@ __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
       int index = i * (*nb_actions);
       index += a * (*horizon);
       index += t;
-      tmp = tmp + TI[a] * 1 + VOLS[a] * 1 * ALEA[index];
+      tmp = tmp*exp(TI[a] * 1 + VOLS[a] * 1 * ALEA[index]) ;
     }
     TIRAGES[i]+=tmp;
   }
