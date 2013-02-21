@@ -1,7 +1,7 @@
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
 				  __global const float *VOLS,
 				  __global const float *TI,
-				  __constant float *ALEA,
+				  __global const float *ALEA,
 				  __global float *TIRAGES,
 				  __constant int *nb_actions,
 				  __constant int *horizon) {
