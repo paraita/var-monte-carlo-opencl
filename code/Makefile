@@ -14,9 +14,9 @@ endif
 
 # libs
 BOOST_INC_OSX	 := -I/opt/local/include
-BOOST_LIB_OSX	 := -L/opt/local/lib
+BOOST_LIB_OSX	 := -L/opt/local/lib -lboost_chrono-mt -lboost_system-mt
 OPENCL_LIB_OSX   := -framework OpenCL
-OPENCL_LIB_LINUX := -lOpenCL
+OPENCL_LIB_LINUX := -lOpenCL -lboost_chrono -lboost_system
 ifeq ($(shell uname), Linux)
 OPENCL_LIB       := $(OPENCL_LIB_LINUX)
 BOOST_INC	 :=
@@ -63,6 +63,7 @@ arch-cible:
 nef: all
 	@echo "run sur nef"
 	qsub monjob.pbs
+
 
 plot: all
 	@echo "execution"

@@ -335,6 +335,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
 			       NULL);
   }
   err_check(err, "execution du kernel", true);
+  err = clFinish(command_queue);
+  err_check(err, "finish de la command_queue", true);
 }
 
 void CLManager::getResultat() {
