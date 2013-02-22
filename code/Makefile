@@ -5,12 +5,6 @@
 #
 ################################################################################
 
-# specifique a NEF
-ifeq ($(shell uname -n), nef-devel)
-OPENCL_INC	:= -I/usr/local/cuda-5.0/include
-else
-OPENCL_INC	:=
-endif
 
 # libs
 BOOST_INC_OSX	 := -I/opt/local/include
@@ -18,9 +12,17 @@ BOOST_LIB_OSX	 := -L/opt/local/lib -lboost_chrono-mt -lboost_system-mt
 OPENCL_LIB_OSX   := -framework OpenCL
 OPENCL_LIB_LINUX := -lOpenCL -lboost_chrono -lboost_system
 ifeq ($(shell uname), Linux)
+# specifique a NEF
+ifeq ($(shell uname -n), nef-devel)
+OPENCL_INC       := -I/usr/local/cuda-5.0/include
+BOOST_INC        := -I/home/pwohler/boost_1_53_0/include
+BOOST_LIB	 := -L/home/pwohler/boost_1_53_0/lib -lOpenCL -lboost_chrono -lboost_system
+else
+# linux en general
 OPENCL_LIB       := $(OPENCL_LIB_LINUX)
-BOOST_INC	 :=
+BOOST_INC	 := 
 BOOST_LIB	 := -lOpenCL -lboost_chrono -lboost_system
+endif
 else
 OPENCL_LIB       := $(OPENCL_LIB_OSX)
 BOOST_INC	 := $(BOOST_INC_OSX)
