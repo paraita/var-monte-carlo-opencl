@@ -331,6 +331,7 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
   size_t global_item_size[1] = { nb_tirages };
   //std::cout << "taille max workitems par workgroup: " << maxWorkGroupSize << std::endl;
   size_t local_item_size[1] = { maxWorkGroupSize };
+  //size_t local_item_size[1] = { 1 };
   cl_kernel k = kernels[kernel];
 
   if (debug_mode) {

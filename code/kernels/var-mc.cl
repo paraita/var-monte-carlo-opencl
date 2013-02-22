@@ -3,8 +3,8 @@ __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
 				  __global const float *TI,
 				  __global const float *ALEA,
 				  __global float *TIRAGES,
-				  __global const int *nb_actions,
-				  __global const *horizon) {
+				  __constant int *nb_actions,
+				  __constant int *horizon) {
   int i = get_global_id(0);
   TIRAGES[i] = 0;
   float tmp;

@@ -66,25 +66,25 @@ nef: all
 
 bench: all
 	@echo "run 1/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 2/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 3/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 4/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 5/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 6/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 7/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 8/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 9/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "run 10/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 8700000 -p ./portefeuille.csv -t 1 -b >> trace.txt
+	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
 	@echo "fin"
 
 plot: all
