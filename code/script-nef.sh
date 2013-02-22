@@ -8,4 +8,4 @@ TRACE=$DIR/trace.csv
 T=1
 SEUIL=0.99
 
-$BIN -c $SEUIL -n $NB -p $PORTEFEUILLE -t $T -b >> $TRACE
+$BIN -c $SEUIL -n $NB -p $PORTEFEUILLE -t $T >> $TRACE
