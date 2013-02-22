@@ -15,8 +15,8 @@ ifeq ($(shell uname), Linux)
 # specifique a NEF
 ifeq ($(shell uname -n), nef-devel)
 OPENCL_INC       := -I/usr/local/cuda-5.0/include
-BOOST_INC        := -I/home/pwohler/boost_1_53_0/include
-BOOST_LIB	 := -L/home/pwohler/boost_1_53_0/lib -lOpenCL -lboost_chrono -lboost_system
+BOOST_INC        := 
+BOOST_LIB	 := -lOpenCL -lboost_chrono -lboost_system -lrt
 else
 # linux en general
 OPENCL_LIB       := $(OPENCL_LIB_LINUX)
