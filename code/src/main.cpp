@@ -105,7 +105,7 @@ void calcul2(float seuil_confiance,
   // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
   CLManager clm;
   std::string nom_kernel("calcul_trajectoires");
-  clm.init(0,0,ENABLE_PROFILING);
+  clm.init(0,1,ENABLE_PROFILING);
   clm.loadKernels("kernels/var-mc.cl");
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);

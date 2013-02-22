@@ -61,6 +61,7 @@ class CLManager {
   cl_ulong ev_start_time;
   cl_ulong ev_end_time;
   bool program_loaded;
+  int maxWorkGroupSize;
   void cleanCL(); // ok
   void err_check(const cl_int, const std::string, const bool); // ok
 };

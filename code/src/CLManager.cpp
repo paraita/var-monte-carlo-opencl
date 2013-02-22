@@ -31,7 +31,8 @@ CLManager::CLManager() : platforms(),
 			 buff_mems(),
 			 device_no(0),
 			 platform_no(0),
-			 output_buff_mem_pos(0) {
+			 output_buff_mem_pos(0),
+       maxWorkGroupSize(0) {
   cl_int err = 0;
   cl_uint numPlatforms = 0;
   cl_uint numDevices = 0;
@@ -103,6 +104,11 @@ void CLManager::init(const int platform, const int device) {
     command_queue = clCreateCommandQueue(context, d, 0, &err);
   }
   err_check(err, "creation de la command queue", true);
+
+  // on set la taille max de workitems dans un workgroup
+  err = clGetDeviceInfo(d, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &maxWorkGroupSize, NULL);
+  err_check(err, "recup du WG du device", true);
+
 }
 
 void CLManager::init(const int platform, const int device, profiling_status debug) {
@@ -323,7 +329,8 @@ void CLManager::executeKernel(const int nb_tirages, const std::string kernel) {
   
   cl_int err = 0;
   size_t global_item_size[1] = { nb_tirages };
-  size_t local_item_size[1] = { 32 };
+  //std::cout << "taille max workitems par workgroup: " << maxWorkGroupSize << std::endl;
+  size_t local_item_size[1] = { maxWorkGroupSize };
   cl_kernel k = kernels[kernel];
 
   if (debug_mode) {
