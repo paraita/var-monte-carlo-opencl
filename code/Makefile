@@ -63,6 +63,7 @@ arch-cible:
 	@echo "compilation pour architecture $(shell uname)"
 
 nef: all
+	-@rm -f monjob.pbs.*
 	@echo "run sur nef"
 	qsub monjob.pbs
 
