@@ -105,7 +105,8 @@ makedirs:
 
 clean:
 	@echo "uoti, ma ro'a !"
-	@rm -Rf $(OBJDIR) $(BINDIR)
+	-@rm -Rf $(OBJDIR) $(BINDIR)
+	-@rm -Rf monjob.pbs.*
 
 check-syntax:
 	clang++ $(CFLAGS) -Wall -Wextra -fsyntax-only $(SRCDIR)/$(SRC) $(OPENCL_LIB)
