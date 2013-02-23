@@ -1,13 +1,13 @@
 #!/bin/bash
 
-NB_ITERATIONS=10
-DIR=/home/pwohler/src/var-monte-carlo-opencl/code
+NB_ITERATIONS=3
+DIR=/home/paraita/src/var-monte-carlo-opencl/code
 BIN=$DIR/bin/pfe
 PORTEFEUILLE=$DIR/portefeuille.csv
-TRACE=$DIR/trace-nef.csv
+TRACE=$DIR/trace-hd5770.csv
 T=1
 SEUIL=0.99
-N=45875200
+N=10485760
 
 for ((i=1; i<=NB_ITERATIONS; i++))
 do
