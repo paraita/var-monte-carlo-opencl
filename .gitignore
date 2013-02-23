@@ -45,3 +45,6 @@ code/.sonar/
 # plotting
 code/*.png
 code/*.data
+
+# fichiers temporaires d'emacs et gedit
+*~
