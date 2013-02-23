@@ -3,4 +3,4 @@
 #PBS -l walltime=15:00:00
 #PBS -q gpu
 #/home/pwohler/src/var-monte-carlo-opencl/code/script-nef.sh
-/home/paittaha/var-monte-carlo-opencl/code/script-nef.sh
+/home/paittaha/src/var-monte-carlo-opencl/code/script-nef.sh
