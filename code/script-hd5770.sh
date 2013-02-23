@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NB_ITERATIONS=3
+NB_ITERATIONS=10
 DIR=/home/paraita/src/var-monte-carlo-opencl/code
 BIN=$DIR/bin/pfe
 PORTEFEUILLE=$DIR/portefeuille.csv
