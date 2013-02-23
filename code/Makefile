@@ -67,28 +67,20 @@ nef: all
 	@echo "run sur nef"
 	qsub monjob.pbs
 
-bench: all
-	@echo "run 1/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 2/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 3/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 4/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 5/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 6/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 7/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 8/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 9/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "run 10/10"
-	-@./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 9830400 -p ./portefeuille.csv -t 1 >> trace.txt
-	@echo "fin"
+bench-hd5770: all
+	@echo "bench HD5770"
+	./script-hd5770.sh
+	@echo "fini"
+
+bench-300M: all
+	@echo "bench 330M"
+	script-330M.sh
+	@echo "fini"
+
+bench-nef: all
+	@echo "bench nef"
+	-@rm -f monjob.pbs.*
+	qsub monjob.pbs
 
 plot: all
 	@echo "execution"
