@@ -1,11 +1,13 @@
 #!/bin/bash
 
-
+<<<<<<< HEAD
 NB_ITERATIONS=3
-#DIR=/home/paraita/src/var-monte-carlo-opencl/code
 #DIR=/home/pwohler/src/var-monte-carlo-opencl/code
 DIR=/home/paittaha/var-monte-carlo-opencl/code
-
+=======
+NB_ITERATIONS=10
+xDIR=/home/paraita/src/var-monte-carlo-opencl/code
+>>>>>>> 4fc828a9db9e5840904253538791e0c3b39c1951
 BIN=$DIR/bin/pfe
 PORTEFEUILLE=$DIR/portefeuille.csv
 TRACE=$DIR/trace-hd5770.csv
