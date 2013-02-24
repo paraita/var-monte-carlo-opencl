@@ -1,14 +1,18 @@
 #!/bin/bash
 
 NB_ITERATIONS=10
+<<<<<<< HEAD:code/script-nef.sh~
 #DIR=/home/pwohler/src/var-monte-carlo-opencl/code
 DIR=/home/paittaha/var-monte-carlo-opencl/code
+=======
+DIR=/home/pwohler/src/var-monte-carlo-opencl/code
+>>>>>>> 4fc828a9db9e5840904253538791e0c3b39c1951:code/script-330M.sh.save
 BIN=$DIR/bin/pfe
 PORTEFEUILLE=$DIR/portefeuille.csv
-TRACE=$DIR/trace-nef.csv
+TRACE=$DIR/trace-330M.csv
 T=1
 SEUIL=0.99
-N=45875200
+N=9830400
 
 for ((i=1; i<=NB_ITERATIONS; i++))
 do
