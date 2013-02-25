@@ -44,12 +44,12 @@ class CLManager {
   void check(const cl_int, const std::string); // ok
   void reset(); // ok
  private:
+  std::map< std::string, cl_kernel > kernels; // ok
+  std::vector<cl_platform_id> platforms; // ok
+  std::vector< std::vector<cl_device_id> > devices; // ok
+  std::vector<cl_mem> buff_mems;
   void * resultat;
   size_t size_resultat;
-  std::map< std::string, cl_kernel > kernels;
-  std::vector<cl_platform_id> platforms;
-  std::vector< std::vector<cl_device_id> > devices;
-  std::vector<cl_mem> buff_mems;
   unsigned int device_no;
   unsigned int platform_no;
   unsigned int output_buff_mem_pos;

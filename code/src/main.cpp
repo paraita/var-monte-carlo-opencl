@@ -28,8 +28,8 @@
 bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std::string* p,int* horizon, bool* batch_mode);
 // RNG sur CPU, calcul trajectoires sur GPU, VaR sur CPU
 void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
-// NRG sur GPU
-void calcul2(int nb_rn);
+// RNG sur GPU
+void calcul2();
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +50,9 @@ int main(int argc, char *argv[])
 			&batch_mode);
   
   if (param_ok) {
-    calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    //calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    calcul2();
+    std::cout << "fin du programme" << std::endl;
     return EXIT_SUCCESS;
   }
   else {
@@ -59,12 +61,22 @@ int main(int argc, char *argv[])
   }
 }
 
-void calcul2(int nb_rn) {
+void calcul2() {
   CLManager clm;
-  clm.init(0,0,ENABLE_PROFILING);
-  clm.loadKernel("var-mc.cl");
-  clm.compileKernel("???");
-  
+  clm.init(0,1,ENABLE_PROFILING);
+  int nb_tirages = 98304;
+  int ul_nb_tirages = 98304;
+  int offset = 0;
+  int acc = 0;
+  std::string nom_kernel("EstimatePi");
+  clm.loadKernels("kernels/var-mc.cl");
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, 1, sizeof(int), &ul_nb_tirages, false);
+  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &offset, false);
+  clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), &acc, true);
+  clm.executeKernel(nb_tirages, nom_kernel);
+  clm.getResultat();
+  std::cout << "Nombre de tirages out: " << std::endl;
 }
 
 void calcul1(float seuil_confiance,
