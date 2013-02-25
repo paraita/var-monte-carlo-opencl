@@ -119,7 +119,7 @@ void calcul1(float seuil_confiance,
   clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
   clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
   clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
-  clm.setKernelArg(nom_kernel, 3, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
+   
   clm.setKernelArg(nom_kernel, 4, nb_tirages, sizeof(float), TIRAGES, true); // sortie
   clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
   clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false);
@@ -127,6 +127,17 @@ void calcul1(float seuil_confiance,
   clm.executeKernel(nb_tirages, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
+  // calcul de la l esperance et de la variance
+  
+
+
+
+
+
+
+  // fin du calcul
+
+
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);
