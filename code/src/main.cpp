@@ -21,7 +21,7 @@
 #include "Portefeuille.h"
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
-#include <boost/chrono.hpp>
+//#include <boost/chrono.hpp>
 #define PRINT_USAGE "Usage: -c seuil_confiance -n nb_tirages -p portefeuille -t horizon [-b]"
 
 
@@ -72,8 +72,7 @@ int main(int argc, char *argv[])
 }
 
 
-void calculVariance(	CLManager& clm ,
-			float *TIRAGES,
+void calculVariance(	float *TIRAGES,
 			int *nb_Simulation,
 			int *nb_value_par_thread,
 			float *esperance,
@@ -140,7 +139,7 @@ void calcul1(float seuil_confiance,
   }
 
   // ~~~~~~~~~~~~~~~~~~~~~~ RNG ~~~~~~~~~~~~~~~~~~~~~~~
-  boost::chrono::high_resolution_clock::time_point start_rng = boost::chrono::high_resolution_clock::now();
+ // boost::chrono::high_resolution_clock::time_point start_rng = boost::chrono::high_resolution_clock::now();
   float *N = (float *) calloc(NB_ACTIONS * nb_tirages * T, sizeof(float));
   float *TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
   boost::mt19937 rng;
@@ -149,7 +148,7 @@ void calcul1(float seuil_confiance,
   for(int g = 0; g < NB_ACTIONS * nb_tirages * T; g++) {
     N[g] = var_nor();
   }
-  boost::chrono::nanoseconds ns_rng = boost::chrono::high_resolution_clock::now() - start_rng;
+ // boost::chrono::nanoseconds ns_rng = boost::chrono::high_resolution_clock::now() - start_rng;
   // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
   CLManager clm;
   std::string nom_kernel("calcul_trajectoires");
@@ -168,23 +167,35 @@ void calcul1(float seuil_confiance,
   clm.executeKernel(nb_tirages, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
+  // on calcul la variance 
+  int  nombre_TIRAGES_par_Thread = (nb_tirages) / (nb_tirages);
+  float esperance=0;
+  float variance=0;
+  int   nb_THREAD = nb_tirages;		
+  float  intervalConfiance = 0.01;
+  float *CARRE = (float *) calloc(nb_tirages, sizeof(float));
+  float *ESPERANCE = (float *) calloc(nb_tirages, sizeof(float));
+
+
+  calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&esperance,&variance,&nb_THREAD,&intervalConfiance,CARRE,ESPERANCE);
+  // fin calcul de variance 
 
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
-  boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
+ // boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);
-  boost::chrono::nanoseconds ns_sort = boost::chrono::high_resolution_clock::now() - start_sort;
+ // boost::chrono::nanoseconds ns_sort = boost::chrono::high_resolution_clock::now() - start_sort;
   
   int percentile = nb_tirages * int(1.0 - seuil_confiance);
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  float t_rng = ns_rng.count() / 1000000.0;
-  float t_sort = ns_sort.count() / 1000000.0;
+ // float t_rng = ns_rng.count() / 1000000.0;
+ // float t_sort = ns_sort.count() / 1000000.0;
   std::cout << nb_tirages << ";";
   std::cout << P.getRendement() << ";";
   std::cout << TIRAGES[percentile+1] << ";";
   std::cout << NB_ACTIONS * nb_tirages * T * sizeof(float) << ";";
-  std::cout << t_rng << ";";
+ // std::cout << t_rng << ";";
   std::cout << clm.getGpuTime() << ";";
-  std::cout << t_sort << std::endl;
+ // std::cout << t_sort << std::endl;
 }
 
 bool parse_args(int argc,
