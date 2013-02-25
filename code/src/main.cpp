@@ -122,10 +122,10 @@ void calcul2() {
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, 1, sizeof(int), &ul_nb_tirages, false);
   clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &offset, false);
-  clm.setKernelArg(nom_kernel, 2, nb_tirages, sizeof(int), &acc, true);
-  // clm.executeKernel(nb_tirages, nom_kernel);
-  // clm.getResultat();
-  // std::cout << "Nombre de tirages out: " << acc << std::endl;
+  clm.setKernelArg(nom_kernel, 2, nb_tirages, sizeof(int), acc, true);
+  clm.executeKernel(nb_tirages, nom_kernel);
+  clm.getResultat();
+  //std::cout << "Nombre de tirages out: " << acc << std::endl;
 }
 
 void calcul1(float seuil_confiance,
