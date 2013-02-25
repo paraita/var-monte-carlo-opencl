@@ -1,8 +1,7 @@
 #!/bin/bash
 
 NB_ITERATIONS=10
-#DIR=/home/pwohler/src/var-monte-carlo-opencl/code
-DIR=/home/paittaha/var-monte-carlo-opencl/code
+DIR=.
 BIN=$DIR/bin/pfe
 PORTEFEUILLE=$DIR/portefeuille.csv
 TRACE=$DIR/trace-330M.csv

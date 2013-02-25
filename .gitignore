@@ -48,3 +48,6 @@ code/*.data
 
 # fichiers temporaires d'emacs et gedit
 *~
+
+# les traces
+*csv

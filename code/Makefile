@@ -72,9 +72,9 @@ bench-hd5770: all
 	./script-hd5770.sh
 	@echo "fini"
 
-bench-300M: all
+bench-330M: all
 	@echo "bench 330M"
-	script-330M.sh
+	./script-330M.sh
 	@echo "fini"
 
 bench-nef: all

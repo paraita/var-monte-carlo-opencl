@@ -2,9 +2,8 @@
 
 
 NB_ITERATIONS=3
-#DIR=/home/paraita/src/var-monte-carlo-opencl/code
-#DIR=/home/pwohler/src/var-monte-carlo-opencl/code
-DIR=/home/paittaha/var-monte-carlo-opencl/code
+DIR=/home/paraita/src/var-monte-carlo-opencl/code
+#DIR=/home/paittaha/var-monte-carlo-opencl/code
 
 BIN=$DIR/bin/pfe
 PORTEFEUILLE=$DIR/portefeuille.csv

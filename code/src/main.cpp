@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 void calcul2(int nb_rn) {
   CLManager clm;
   clm.init(0,0,ENABLE_PROFILING);
+  
 }
 
 void calcul1(float seuil_confiance,
