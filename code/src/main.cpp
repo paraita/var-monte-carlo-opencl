@@ -31,6 +31,18 @@ void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
 // NRG sur GPU
 void calcul2(int nb_rn);
 
+void calculVariance(	CLManager& clm ,
+			float *TIRAGES,
+			int *nb_Simulation,
+			int *nb_value_par_thread,
+			float *esperance,
+			float *variance,
+			int *nb_THREAD,  
+	      		float *intervalConfiance,      	 
+			float *CARRE,
+			float *ESPERANCE );
+
+
 int main(int argc, char *argv[])
 {
   bool param_ok = false;
@@ -58,6 +70,35 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 }
+
+
+void calculVariance(	CLManager& clm ,
+			float *TIRAGES,
+			int *nb_Simulation,
+			int *nb_value_par_thread,
+			float *esperance,
+			float *variance,
+			int *nb_THREAD,  
+	      		float *intervalConfiance,      	 
+			float *CARRE,
+			float *ESPERANCE )
+{
+ CLManager clm;
+  clm.init(0,2,ENABLE_PROFILING);
+  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/outil.cl");
+  //clm.loadKernels("kernels/var-mc.cl");
+  /*clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
+  clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
+  clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
+  clm.setKernelArg(nom_kernel, 3, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
+  clm.setKernelArg(nom_kernel, 4, nb_tirages, sizeof(float), TIRAGES, true); // sortie
+  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false); 
+*/
+}
+
+
 
 void calcul2(int nb_rn) {
   CLManager clm;
@@ -127,6 +168,7 @@ void calcul1(float seuil_confiance,
   clm.executeKernel(nb_tirages, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
+
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);
