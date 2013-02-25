@@ -102,8 +102,13 @@ CLManager clm;
   clm.executeKernel(*nb_Simulation, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
+<<<<<<< HEAD
+  std::cout << "la variance vaut" << *variance << std::endl;
+
+=======
   // on calcul la variance
   std::cout << "fin du calcul " << std::endl;
+>>>>>>> f5dab69663b546f16f00541d19bd2bf32b95b825
 }
 
 
