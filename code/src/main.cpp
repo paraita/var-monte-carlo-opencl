@@ -102,13 +102,9 @@ CLManager clm;
   clm.executeKernel(*nb_Simulation, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
-<<<<<<< HEAD
   std::cout << "la variance vaut" << *variance << std::endl;
-
-=======
   // on calcul la variance
   std::cout << "fin du calcul " << std::endl;
->>>>>>> f5dab69663b546f16f00541d19bd2bf32b95b825
 }
 
 
@@ -127,9 +123,9 @@ void calcul2() {
   clm.setKernelArg(nom_kernel, 0, 1, sizeof(int), &ul_nb_tirages, false);
   clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &offset, false);
   clm.setKernelArg(nom_kernel, 2, nb_tirages, sizeof(int), &acc, true);
-  clm.executeKernel(nb_tirages, nom_kernel);
-  clm.getResultat();
-  std::cout << "Nombre de tirages out: " << acc << std::endl;
+  // clm.executeKernel(nb_tirages, nom_kernel);
+  // clm.getResultat();
+  // std::cout << "Nombre de tirages out: " << acc << std::endl;
 }
 
 void calcul1(float seuil_confiance,

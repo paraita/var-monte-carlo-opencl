@@ -19,7 +19,6 @@
 // destructor
 
 CLManager::~CLManager() {
-  std::cout << "appel du destructeur " << std::endl;
   cleanCL();
   prof_event = NULL;
   buff_mems.clear();
@@ -27,7 +26,6 @@ CLManager::~CLManager() {
   platforms.clear();
   kernels.clear();
   resultat = NULL;
-  std::cout << "fin du destructeur" << std::endl;
 }
 
 // constructeur par defaut
@@ -470,7 +468,6 @@ void CLManager::reset() {
   int cnt = 0;
   for (cnt = 0; cnt < buff_mems.size(); cnt++) {
     cl_mem m = buff_mems[cnt];
-    std::cout << "clReleaseMemObject" << std::endl;
     err = clReleaseMemObject(m);
     err_check(err, "release buff mem", true);
   }
@@ -482,13 +479,10 @@ void CLManager::cleanCL() {
   cl_int err = 0;
 
   if (command_queue != NULL) {
-    std::cout << "clFlush" << std::endl;
     err = clFlush(command_queue);
     err_check(err, "flush de la command_queue", true);
-    std::cout << "clFinish" << std::endl;
     err = clFinish(command_queue);
     err_check(err, "finish de la command_queue", true);
-    std::cout << "clReleaseCommandQueue" << std::endl;
     err = clReleaseCommandQueue(command_queue);
     err_check(err, "release de la command_queue", true);
     command_queue = NULL;
@@ -498,13 +492,11 @@ void CLManager::cleanCL() {
   for(std::map< std::string, cl_kernel >::iterator it = kernels.begin();
       it != kernels.end();
       ++it) {
-    std::cout << "\trelease d'un kernel" << std::endl;
     err = clReleaseKernel(it->second);
     err_check(err, "release du kernel " + it->first, true);
   }
 
   if (program != NULL) {
-    std::cout << "programme chargé on le release aussi" << std::endl;
     err = clReleaseProgram(program);
     err_check(err, "release du program", true);
     program = NULL;
@@ -513,7 +505,6 @@ void CLManager::cleanCL() {
   reset();
 
   if (context != NULL) {
-    std::cout << "clReleaseContext" << std::endl;
     err = clReleaseContext(context);
     err_check(err, "release du contexte", true);
     context = NULL;
