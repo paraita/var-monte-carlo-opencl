@@ -51,3 +51,4 @@ code/*.data
 
 # les traces
 *csv
+monjob.pbs.*

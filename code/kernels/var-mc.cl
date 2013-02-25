@@ -1,3 +1,5 @@
+
+
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
 				  __global const float *VOLS,
 				  __global const float *TI,

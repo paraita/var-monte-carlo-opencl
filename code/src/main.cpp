@@ -28,7 +28,7 @@
 bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std::string* p,int* horizon, bool* batch_mode);
 // RNG sur CPU, calcul trajectoires sur GPU, VaR sur CPU
 void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
-// MT sur GPU
+// NRG sur GPU
 void calcul2(int nb_rn);
 
 int main(int argc, char *argv[])
@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
 void calcul2(int nb_rn) {
   CLManager clm;
   clm.init(0,0,ENABLE_PROFILING);
+  clm.loadKernel("var-mc.cl");
+  clm.compileKernel("???");
   
 }
 
