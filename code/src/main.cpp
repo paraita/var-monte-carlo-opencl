@@ -31,8 +31,7 @@ void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
 // NRG sur GPU
 void calcul2(int nb_rn);
 
-void calculVariance(	CLManager& clm ,
-			float *TIRAGES,
+void calculVariance(	float *TIRAGES,
 			int *nb_Simulation,
 			int *nb_value_par_thread,
 			float *esperance,
@@ -82,9 +81,11 @@ void calculVariance(	float *TIRAGES,
 			float *CARRE,
 			float *ESPERANCE )
 {
- CLManager clm;
-  std::string nom_kernel("calcul variance");
-  clm.init(0,2,ENABLE_PROFILING);
+  std::cout << "on attaque la variance"<<std::endl; 
+ std::cout << "on a "<< *esperance << std::endl;
+CLManager clm;
+  std::string nom_kernel("calcul_variance");
+  clm.init(0,1,ENABLE_PROFILING);
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/outil.cl");
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, *nb_Simulation,sizeof(float), TIRAGES,false);
@@ -101,7 +102,7 @@ void calculVariance(	float *TIRAGES,
   // recuperation des résultats
   clm.getResultat();
   // on calcul la variance
-
+  std::cout << "fin du calcul " << std::endl;
 }
 
 
