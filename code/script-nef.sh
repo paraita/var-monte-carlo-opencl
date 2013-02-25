@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NB_ITERATIONS=10
+NB_ITERATIONS=1
 #DIR=/home/pwohler/src/var-monte-carlo-opencl/code
 DIR=/home/paittaha/var-monte-carlo-opencl/code
 BIN=$DIR/bin/pfe

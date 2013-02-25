@@ -83,18 +83,25 @@ void calculVariance(	float *TIRAGES,
 			float *ESPERANCE )
 {
  CLManager clm;
+  std::string nom_kernel("calcul variance");
   clm.init(0,2,ENABLE_PROFILING);
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/outil.cl");
-  //clm.loadKernels("kernels/var-mc.cl");
-  /*clm.compileKernel(nom_kernel);
-  clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
-  clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
-  clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
-  clm.setKernelArg(nom_kernel, 3, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
-  clm.setKernelArg(nom_kernel, 4, nb_tirages, sizeof(float), TIRAGES, true); // sortie
-  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
-  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false); 
-*/
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, *nb_Simulation,sizeof(float), TIRAGES,false);
+  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), nb_Simulation, false);
+  clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), nb_value_par_thread, false);
+  clm.setKernelArg(nom_kernel, 3, 1, sizeof(float), esperance, true); // sortie
+  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float), variance, true);  // sortie
+  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), nb_THREAD, false);
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(float), intervalConfiance, false);
+  clm.setKernelArg(nom_kernel, 7, *nb_THREAD,sizeof(float), CARRE,false);
+  clm.setKernelArg(nom_kernel, 8, *nb_THREAD,sizeof(float), ESPERANCE,false);
+  // run sur le GPU
+  clm.executeKernel(*nb_Simulation, nom_kernel);
+  // recuperation des résultats
+  clm.getResultat();
+  // on calcul la variance
+
 }
 
 
@@ -175,8 +182,6 @@ void calcul1(float seuil_confiance,
   float  intervalConfiance = 0.01;
   float *CARRE = (float *) calloc(nb_tirages, sizeof(float));
   float *ESPERANCE = (float *) calloc(nb_tirages, sizeof(float));
-
-
   calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&esperance,&variance,&nb_THREAD,&intervalConfiance,CARRE,ESPERANCE);
   // fin calcul de variance 
 
