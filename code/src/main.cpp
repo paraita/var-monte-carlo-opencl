@@ -114,13 +114,14 @@ void calcul2() {
   int nb_tirages = 98304;
   int ul_nb_tirages = 98304;
   int offset = 0;
-  int acc = 0;
+  int *acc = NULL;
+  acc = (int *) calloc(nb_tirages, sizeof(int));
   std::string nom_kernel("EstimatePi");
   clm.loadKernels("kernels/var-mc.cl");
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, 1, sizeof(int), &ul_nb_tirages, false);
   clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &offset, false);
-  clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), &acc, true);
+  clm.setKernelArg(nom_kernel, 2, nb_tirages, sizeof(int), &acc, true);
   clm.executeKernel(nb_tirages, nom_kernel);
   clm.getResultat();
   std::cout << "Nombre de tirages out: " << acc << std::endl;
