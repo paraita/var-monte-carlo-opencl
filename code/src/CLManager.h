@@ -44,12 +44,12 @@ class CLManager {
   void check(const cl_int, const std::string); // ok
   void reset(); // ok
  private:
+  std::map< std::string, cl_kernel > kernels; // ok
+  std::vector<cl_platform_id> platforms; // ok
+  std::vector< std::vector<cl_device_id> > devices; // ok
+  std::vector<cl_mem> buff_mems;
   void * resultat;
   size_t size_resultat;
-  std::map< std::string, cl_kernel > kernels;
-  std::vector<cl_platform_id> platforms;
-  std::vector< std::vector<cl_device_id> > devices;
-  std::vector<cl_mem> buff_mems;
   unsigned int device_no;
   unsigned int platform_no;
   unsigned int output_buff_mem_pos;
@@ -60,7 +60,6 @@ class CLManager {
   cl_event prof_event;
   cl_ulong ev_start_time;
   cl_ulong ev_end_time;
-  bool program_loaded;
   int maxWorkGroupSize;
   void cleanCL(); // ok
   void err_check(const cl_int, const std::string, const bool); // ok
