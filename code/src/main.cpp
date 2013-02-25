@@ -42,6 +42,17 @@ void calculVariance(	float *TIRAGES,
 			float *ESPERANCE );
 
 
+void calculVariance(	float *TIRAGES,
+			int *nb_Simulation,
+			int *nb_value_par_thread,
+			float *esperance,
+			float *variance,
+			int *nb_THREAD,  
+	      		float *intervalConfiance,      	 
+			float *CARRE,
+			float *ESPERANCE );
+
+
 int main(int argc, char *argv[])
 {
   bool param_ok = false;
@@ -72,9 +83,53 @@ int main(int argc, char *argv[])
   }
 }
 
+<<<<<<< HEAD
 
 void calcul2() {
+||||||| merged common ancestors
+void calcul2(int nb_rn) {
+=======
+
+void calculVariance(	float *TIRAGES,
+			int *nb_Simulation,
+			int *nb_value_par_thread,
+			float *esperance,
+			float *variance,
+			int *nb_THREAD,  
+	      		float *intervalConfiance,      	 
+			float *CARRE,
+			float *ESPERANCE )
+{
+  std::cout << "on attaque la variance"<<std::endl; 
+ std::cout << "on a "<< *esperance << std::endl;
+CLManager clm;
+  std::string nom_kernel("calcul_variance");
+  clm.init(0,1,ENABLE_PROFILING);
+  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/outil.cl");
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, *nb_Simulation,sizeof(float), TIRAGES,false);
+  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), nb_Simulation, false);
+  clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), nb_value_par_thread, false);
+  clm.setKernelArg(nom_kernel, 3, 1, sizeof(float), esperance, true); // sortie
+  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float), variance, true);  // sortie
+  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), nb_THREAD, false);
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(float), intervalConfiance, false);
+  clm.setKernelArg(nom_kernel, 7, *nb_THREAD,sizeof(float), CARRE,false);
+  clm.setKernelArg(nom_kernel, 8, *nb_THREAD,sizeof(float), ESPERANCE,false);
+  // run sur le GPU
+  clm.executeKernel(*nb_Simulation, nom_kernel);
+  // recuperation des résultats
+  clm.getResultat();
+  // on calcul la variance
+  std::cout << "fin du calcul " << std::endl;
+}
+
+
+
+void calcul2(int nb_rn) {
+>>>>>>> 07da01a4d4132f05724815456ec5996f512a56d1
   CLManager clm;
+<<<<<<< HEAD
   clm.init(0,1,ENABLE_PROFILING);
   int nb_tirages = 98304;
   int ul_nb_tirages = 98304;
@@ -123,6 +178,17 @@ CLManager clm;
   clm.getResultat();
   // on calcul la variance
   std::cout << "fin du calcul " << std::endl;
+||||||| merged common ancestors
+  clm.init(0,0,ENABLE_PROFILING);
+  clm.loadKernel("var-mc.cl");
+  clm.compileKernel("???");
+  
+=======
+  clm.init(0,0,ENABLE_PROFILING);
+  clm.loadKernels("var-mc.cl");
+  clm.compileKernel("???");
+  
+>>>>>>> 07da01a4d4132f05724815456ec5996f512a56d1
 }
 
 void calcul1(float seuil_confiance,
