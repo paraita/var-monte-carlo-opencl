@@ -100,7 +100,7 @@ void calculVariance(	float *TIRAGES,
   clm.executeKernel(*nb_Simulation, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
-  // on calcul la variance
+  std::cout << "la variance vaut" << *variance << std::endl;
 
 }
 
