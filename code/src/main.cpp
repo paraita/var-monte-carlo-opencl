@@ -76,7 +76,7 @@ void calcul2() {
   clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), &acc, true);
   clm.executeKernel(nb_tirages, nom_kernel);
   clm.getResultat();
-  std::cout << "Nombre de tirages out: " << std::endl;
+  std::cout << "Nombre de tirages out: " << acc << std::endl;
 }
 
 void calcul1(float seuil_confiance,

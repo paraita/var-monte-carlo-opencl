@@ -51,7 +51,6 @@ CLManager::CLManager() : kernels(),
   prof_event = NULL;
   ev_start_time = 0;
   ev_end_time = 0;
-  program_loaded = false;
   maxWorkGroupSize = 0;
 
   cl_platform_id *p = NULL;
@@ -326,7 +325,6 @@ void CLManager::loadKernels(const char* chemin) {
   cl_device_id d = (devices[platform_no])[device_no];
   err = clBuildProgram(program, 1, &d, NULL, NULL, NULL);
   err_check(err, "compilation du cl_program", true);
-  program_loaded = true;
 }
 
 void CLManager::compileKernel(const std::string nom_kernel) {
@@ -505,7 +503,7 @@ void CLManager::cleanCL() {
     err_check(err, "release du kernel " + it->first, true);
   }
 
-  if (program_loaded) {
+  if (program != NULL) {
     std::cout << "programme chargé on le release aussi" << std::endl;
     err = clReleaseProgram(program);
     err_check(err, "release du program", true);

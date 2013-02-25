@@ -120,21 +120,19 @@ __kernel void EstimatePi(__global int *n,
 			 __global int *baseOffset,
 			 __global int *acc)
 {
-  /*
   mwc64x_state_t rng;
-  unsigned long samplesPerStream=(*)n/get_global_size(0);
+  ulong samplesPerStream = (*n)/get_global_size(0);
   MWC64X_SeedStreams(&rng, (*baseOffset), 2*samplesPerStream);
-  uint count=0;
-  for(uint i=0;i<samplesPerStream;i++){
-    ulong x=MWC64X_NextUint(&rng);
-    ulong y=MWC64X_NextUint(&rng);
-    ulong x2=x*x;
-    ulong y2=y*y;
-    if(x2+y2 >= x2)
+  uint count = 0;
+  for(uint i = 0; i < samplesPerStream; i++){
+    ulong x = MWC64X_NextUint(&rng);
+    ulong y = MWC64X_NextUint(&rng);
+    ulong x2 = x * x;
+    ulong y2 = y * y;
+    if(x2 + y2 >= x2)
       count++;
   }
   acc[get_global_id(0)] = count;
-  */
 }
 
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
@@ -153,7 +151,7 @@ __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
       int index = i * (*nb_actions);
       index += a * (*horizon);
       index += t;
-      tmp = tmp*exp(TI[a] * 1 + VOLS[a] * 1 * ALEA[index]) ;
+      tmp = tmp*exp(TI[a] * 1 + VOLS[a] * 1 * ALEA[index]);
     }
     TIRAGES[i]+=tmp;
   }
