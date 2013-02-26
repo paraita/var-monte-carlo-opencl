@@ -35,16 +35,18 @@ void calcul3(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
 // test_vide
 void calcul4();
 // calcul de variance
-void calculVariance(	float *TIRAGES,
+float calculVariance(	float *TIRAGES,
 			int *nb_Simulation,
 			int *nb_value_par_thread,
-			float *esperance,
-			float *variance,
+			float esperance,
 			int *nb_THREAD,  
-	      		float *intervalConfiance,      	 
-			float *CARRE,
 			float *ESPERANCE );
 
+float calculEsperance(	float *TIRAGES,
+			int *nb_Simulation,
+			int *nb_value_par_thread,
+			int *nb_THREAD, 
+			float *ESPERANCE );
 
 int main(int argc, char *argv[])
 {
@@ -65,14 +67,12 @@ int main(int argc, char *argv[])
 			&batch_mode);
   
   if (param_ok) {
-<<<<<<< HEAD
+
     calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     //calcul2();
-=======
     //calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // marche
     //calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // marche
     calcul3(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // todo
->>>>>>> a3c4e6dfbc9309f58683617e43beb6d0ed887609
     std::cout << "fin du programme" << std::endl;
     return EXIT_SUCCESS;
   }
@@ -82,24 +82,15 @@ int main(int argc, char *argv[])
   }
 }
 
-void calculVariance(	float *TIRAGES,
+float calculEsperance(	float *TIRAGES,
 			int *nb_Simulation,
 			int *nb_value_par_thread,
-			float *esperance,
-			float *variance,
-			int *nb_THREAD,  
-	      		float *intervalConfiance,      	 
-			float *CARRE,
+			int *nb_THREAD, 
 			float *ESPERANCE )
 {
-  std::cout << "on attaque la variance"<<std::endl; 
-  std::cout << "on a "<< *esperance << std::endl;
+  std::cout << "on attaque l'esperance"<<std::endl; 
   CLManager clm;
-<<<<<<< HEAD
   std::string nom_kernel("calcul_esperance");
-=======
-  std::string nom_kernel("calcul_variance");
->>>>>>> a3c4e6dfbc9309f58683617e43beb6d0ed887609
   clm.init(0,1,ENABLE_PROFILING);
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/esperance.cl");
   clm.compileKernel(nom_kernel);
@@ -107,21 +98,25 @@ void calculVariance(	float *TIRAGES,
   clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), nb_Simulation, false);
   clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), nb_value_par_thread, false);
   clm.setKernelArg(nom_kernel, 3, 1, sizeof(float), esperance, true); // sortie
-  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float), variance, true);  // sortie
-  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), nb_THREAD, false);
-  clm.setKernelArg(nom_kernel, 6, 1, sizeof(float), intervalConfiance, true); //sortie
-  clm.setKernelArg(nom_kernel, 7, *nb_THREAD,sizeof(float), CARRE,true); // sortie
-  clm.setKernelArg(nom_kernel, 8, *nb_THREAD,sizeof(float), ESPERANCE,true); //sortie
+  clm.setKernelArg(nom_kernel, 4, 1, sizeof(int), nb_THREAD, false);
+  clm.setKernelArg(nom_kernel, 5, *nb_THREAD,sizeof(float), ESPERANCE,true); //sortie
   // run sur le GPU
   clm.executeKernel(*nb_Simulation, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
-<<<<<<< HEAD
   // on a l'esperance, maintenant la variance !
  
-  std::cout << " esper " << ESPERANCE[(*nb_THREAD-3)] << " ";
-  float  esp = ESPERANCE[(*nb_THREAD-3)];
+  std::cout << " esper " << ESPERANCE[(*nb_THREAD-3)] << " valeur de retour normal "<< *esperance << std::endl;
+  return esp = ESPERANCE[(*nb_THREAD-3)];
+}
 
+float calculVariance(	float *TIRAGES,
+			int *nb_Simulation,
+			int *nb_value_par_thread,
+			float esperance,
+			int *nb_THREAD,  
+			float *ESPERANCE )
+{
   CLManager clm1;
   std::string nom_kernel2("calcul_variance");
   clm1.init(0,1,ENABLE_PROFILING);
@@ -133,19 +128,15 @@ void calculVariance(	float *TIRAGES,
   clm1.setKernelArg(nom_kernel2, 3, 1, sizeof(float),&esp, false);                                                      
   clm1.setKernelArg(nom_kernel2, 4, 1, sizeof(float), variance, true);  // sortie                                                            
   clm1.setKernelArg(nom_kernel2, 5, 1, sizeof(int), nb_THREAD, false);
-  clm1.setKernelArg(nom_kernel2, 6, 1, sizeof(float), intervalConfiance, true); //sortie                                                     
-  clm1.setKernelArg(nom_kernel2, 7, *nb_THREAD,sizeof(float), CARRE,true); // sortie                                                         
-  clm1.setKernelArg(nom_kernel2, 8, *nb_THREAD,sizeof(float), ESPERANCE,true); //sortie                                                      
+  clm1.setKernelArg(nom_kernel2, 6, *nb_THREAD,sizeof(float), ESPERANCE,true); //sortie                                                      
   // run sur le GPU                                                                                                                          
   clm1.executeKernel(*nb_Simulation, nom_kernel2);
   // recuperation des résultats                                                                                                              
   clm1.getResultat();
   std::cout << " var " << ESPERANCE[(*nb_THREAD-3)] << " ";
-  std::cout << "intervalconfiance" << 1.96*ESPERANCE[(*nb_THREAD-3)]/sqrt(*nb_Simulation) << std::endl;
-=======
+ 
   std::cout << "la variance vaut" << *variance << std::endl;
   // on calcul la variance
->>>>>>> a3c4e6dfbc9309f58683617e43beb6d0ed887609
   std::cout << "fin du calcul " << std::endl;
 }
 
@@ -239,15 +230,15 @@ void calcul1(float seuil_confiance,
   // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
   CLManager clm;
   std::string nom_kernel("calcul_trajectoires");
-<<<<<<< HEAD
+
   clm.init(0,1,ENABLE_PROFILING);
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
-  //clm.loadKernels("kernels/var-mc.cl");
-=======
-  clm.init(0,0,ENABLE_PROFILING);
-  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
   clm.loadKernels("kernels/var-mc.cl");
->>>>>>> a3c4e6dfbc9309f58683617e43beb6d0ed887609
+
+//  clm.init(0,0,ENABLE_PROFILING);
+  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+//  clm.loadKernels("kernels/var-mc.cl");
+
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
   clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
@@ -261,28 +252,23 @@ void calcul1(float seuil_confiance,
   // recuperation des résultats
   clm.getResultat();
   // on calcul la variance 
-<<<<<<< HEAD
+
   int  nombre_TIRAGES_par_Thread = 1;
   float esperance=0;
   float variance=0;
   int   nb_THREAD = nb_tirages;		
   float  intervalConfiance = 0.01;
-  float *CARRE = (float *) calloc(nb_tirages, sizeof(float));
   float *ESPERANCE = (float *) calloc(nb_tirages, sizeof(float));
-   calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&esperance,&variance,&nb_THREAD,&intervalConfiance,CARRE,ESPERANCE);
-  // fin calcul de variance 
-=======
-  // int  nombre_TIRAGES_par_Thread = (nb_tirages) / (nb_tirages);
-  // float esperance=0;
-  // float variance=0;
-  // int   nb_THREAD = nb_tirages;		
-  // float  intervalConfiance = 0.01;
-  // float *CARRE = (float *) calloc(nb_tirages, sizeof(float));
-  // float *ESPERANCE = (float *) calloc(nb_tirages, sizeof(float));
-  // calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&esperance,&variance,&nb_THREAD,&intervalConfiance,CARRE,ESPERANCE);
-  // // fin calcul de variance 
->>>>>>> a3c4e6dfbc9309f58683617e43beb6d0ed887609
 
+
+  esperance = calculEsperance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&nb_THREAD,ESPERANCE);
+  variance =  calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&esperance,&nb_THREAD,ESPERANCE);
+  // fin calcul de variance 
+
+
+  //std::cout << "intervalconfiance" << 1.96*ESPERANCE[(*nb_THREAD-3)]/sqrt(*nb_Simulation) << std::endl;
+
+  
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);

@@ -1,12 +1,9 @@
 __kernel void calcul_esperance(__global const float *TIRAGES,
 	      			  __global const int *nb_Simulation,
 	      			  __global const int *nb_value_par_thread, 
-	      			  __global float *esperance,
-	      			  __global float *variance,  
-	      			  __global const int *nb_THREAD,  
-	      			  __global float *intervalConfiance,      	 
-				  __global float *CARRE, 		  /*tableau de taille nombre processeur */
-				  __global float *ESPERANCE)
+	      			  __global float *esperance, 
+	      			  __global const int *nb_THREAD, 	  
+				  __global float *ESPERANCE)    /*tableau de taille nombre processeur */
 {		  
   int i = get_global_id(0)*(*nb_value_par_thread);
   float tmp =0;
@@ -14,7 +11,6 @@ __kernel void calcul_esperance(__global const float *TIRAGES,
     tmp=tmp+TIRAGES[i+t];
   } 
   ESPERANCE[get_global_id(0)]=tmp;
-
 
    barrier(CLK_LOCAL_MEM_FENCE);
  
