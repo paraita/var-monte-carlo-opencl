@@ -91,7 +91,7 @@ float calculEsperance(	float *TIRAGES,
 			int *nb_THREAD, 
 			float *ESPERANCE )
 {
-  float esp=(float)0.0;
+  float esp=(float)10.0;
   float  *esperance =&esp;
   CLManager clm;
   std::string nom_kernel("calcul_esperance");
@@ -103,15 +103,16 @@ float calculEsperance(	float *TIRAGES,
   clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), nb_value_par_thread, false);
   clm.setKernelArg(nom_kernel, 3, 1, sizeof(float), esperance, true); // sortie
   clm.setKernelArg(nom_kernel, 4, 1, sizeof(int), nb_THREAD, false);
-  clm.setKernelArg(nom_kernel, 5, *nb_THREAD,sizeof(float), ESPERANCE,true); //sortie
+  clm.setKernelArg(nom_kernel, 5, *nb_THREAD,sizeof(float), ESPERANCE,false); 
+  // clm.setKernelArg(nom_kernel,0,1,sizeof(float),esperance,true);
   // run sur le GPU
   clm.executeKernel(*nb_Simulation, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
   // on a l'esperance, maintenant la variance !
   //  for(int i=0; i< (*nb_Simulation);i++){ if( i > 0.99999 *(*nb_Simulation)){std::cout << ESPERANCE[i] << " ";}} 
-  std::cout << " esper " << ESPERANCE[(*nb_THREAD-5)] << " valeur de retour normal "<< *esperance << std::endl;
-  return ESPERANCE[(*nb_THREAD-5)];
+  std::cout << " esperance "<< *esperance << std::endl;
+  return *esperance;
 }
 
 float calculVariance(	float *TIRAGES,
@@ -121,7 +122,8 @@ float calculVariance(	float *TIRAGES,
 			int *nb_THREAD,  
 			float *ESPERANCE )
 {
-  float variance=0.0;
+  float var=(float)10.0;
+  float *variance=&var;
   CLManager clm;
   std::string nom_kernel("calcul_variance");
   clm.init(0,1,ENABLE_PROFILING);
@@ -131,22 +133,20 @@ float calculVariance(	float *TIRAGES,
   clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), nb_Simulation, false);
   clm.setKernelArg(nom_kernel, 2, 1, sizeof(int), nb_value_par_thread, false);
   clm.setKernelArg(nom_kernel, 3, 1, sizeof(float),&esperance, false);                                                      
-  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float),&variance, true);  // sortie                                                            
+  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float),variance, true);  // sortie                                                            
   clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), nb_THREAD, false);
-  clm.setKernelArg(nom_kernel, 6, *nb_THREAD,sizeof(float), ESPERANCE,true); //sortie                                                      
+  clm.setKernelArg(nom_kernel, 6, *nb_THREAD,sizeof(float), ESPERANCE,false);                                                      
   // run sur le GPU                                                                                                                          
   clm.executeKernel(*nb_Simulation, nom_kernel);
   // recuperation des résultats                                                                                                              
   clm.getResultat();
-  std::cout << " var " << ESPERANCE[(*nb_THREAD-5)] << " ";
-  //TODO
-  std::cout << "la variance vaut en retour normal " << variance << std::endl;
+  std::cout << " variance " << *variance << std::endl;
   // on calcul la variance
 
   //  for(int j=0; j < (*nb_THREAD);j++){if(j> 0.99999*(*nb_THREAD))std::cout << ESPERANCE[j]<< " ";}
   
-  std::cout << "interval de confiance " << 1.96*sqrt(ESPERANCE[(*nb_THREAD-5)])/(sqrt(*nb_Simulation)) << std::endl ; 
-  return ESPERANCE[(*nb_THREAD-5)];
+  std::cout << "interval de confiance " << 1.96*sqrt(*variance)/(sqrt(*nb_Simulation)) << std::endl ; 
+  return *variance;
 }
 
 void calcul5(float seuil_confiance,
