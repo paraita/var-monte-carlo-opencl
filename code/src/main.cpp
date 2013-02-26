@@ -26,14 +26,14 @@
 
 
 bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std::string* p,int* horizon, bool* batch_mode);
-// RNG sur CPU, calcul trajectoires sur GPU, VaR sur CPU
+// RNG sur CPU, calcul trajectoires sur GPU, tri sur CPU
 void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // RNG sur GPU
 void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // distribution gaussienne
 void calcul3(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
-// test_vide
-void calcul4();
+// RNG sur GPU, calcul trajectoires sur GPU, tri sur CPU
+void calcul4(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // calcul 1 + variance et interval de confiance
 void calcul5(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // calcul de variance
@@ -70,13 +70,8 @@ int main(int argc, char *argv[])
   
   if (param_ok) {
 
-    calcul5(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
-    //calcul2();
-    //calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // marche
-    //calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // marche
-    std::cout << "calcul 3" <<std::endl;
-    calcul3(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // todo
-    std::cout << "fin du programme" << std::endl;
+    //calcul5(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    calcul4(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     return EXIT_SUCCESS;
   }
   else {
@@ -256,29 +251,87 @@ void calcul5(float seuil_confiance,
   std::cout << t_sort << std::endl;
 }
 
+void calcul4(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug) {
+  Portefeuille P(portefeuille);
+  float *RENDEMENTS = P.getRendements();
+  float *VOLS = P.getVolatilites();
+  float *TI = P.getTauxInterets();
+  int NB_ACTIONS = P.getTaille();
+  float rendement = P.getRendement();
+  float *TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
+  if (debug)
+    {
+      std::cout << "Mémoire utilisée:" << std::endl;
+      int taille_rendement = sizeof(float);
+      std::cout << "\trendement actuel: " << taille_rendement << " octets" << std::endl;
+      int taille_rendements = sizeof(float) * NB_ACTIONS;
+      std::cout << "\tRENDEMENTS: " << taille_rendements << " octets" << std::endl;
+      int taille_vols = sizeof(float) * NB_ACTIONS;
+      std::cout << "\tVOLS: " << taille_vols << " octets" << std::endl;
+      int taille_ti = sizeof(float) * NB_ACTIONS;
+      std::cout << "\tTI: " << taille_ti << " octets" << std::endl;
+      int taille_nb_actions = sizeof(int);
+      std::cout << "\tvariable nb_actions: " << taille_nb_actions << " octets" << std::endl;
+      int taille_horizon = sizeof(int);
+      std::cout << "\tvariable horizon: " << taille_horizon << " octets" << std::endl;
+      int total = taille_rendements + taille_vols + taille_ti + taille_nb_actions + taille_horizon;
+      std::cout << "\tTOTAL: " << total / 1000000.0 << " Mo" << std::endl;
+    }
+  // RNG + Tirages sur GPU
+  CLManager clm;
+  std::string nom_kernel("calcul_trajectoires2");
+  clm.init(0,1,ENABLE_PROFILING);
+  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+  clm.loadKernels("kernels/var-mc.cl");
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
+  clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
+  clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
+  clm.setKernelArg(nom_kernel, 3, nb_tirages, sizeof(float), TIRAGES, true); // sortie
+  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float), &rendement, false);
+  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false);
+  clm.executeKernel(nb_tirages, nom_kernel);
+  clm.getResultat();
+  // tri sur CPU
+  boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
+  std::sort(TIRAGES, TIRAGES+nb_tirages);
+  boost::chrono::nanoseconds ns_sort = boost::chrono::high_resolution_clock::now() - start_sort;
+  // VaR
+  int percentile = nb_tirages * int(1.0 - seuil_confiance);
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  float t_sort = ns_sort.count() / 1000000.0;
+  std::cout << nb_tirages << ";";
+  std::cout << P.getRendement() << ";";
+  std::cout << TIRAGES[percentile+1] << ";";
+  std::cout << clm.getGpuTime() << ";";
+  std::cout << t_sort << std::endl;
+}
 
-
-
+// tirage de variables aléatoires gaussiennes
 void calcul3(float seuil_conficance,int nb_tirages,std::string portefeuille,int T,bool debug) {
   CLManager clm;
   clm.init(0,1);
   std::string nom_kernel("distribution_gauss");
   clm.loadKernels("kernels/var-mc.cl");
   clm.compileKernel(nom_kernel);
-  unsigned long *TIRAGES = NULL;
-  TIRAGES = (unsigned long *) calloc(nb_tirages, sizeof(unsigned long));
-  clm.setKernelArg(nom_kernel, 0, nb_tirages, sizeof(unsigned long), TIRAGES, true);
-  clm.executeKernel(nb_tirages, nom_kernel);
+  float *TIRAGES = NULL;
+  int moitie = (nb_tirages / 2);
+  TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
+  clm.setKernelArg(nom_kernel, 0, nb_tirages, sizeof(float), TIRAGES, true);
+  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &moitie, false);
+  clm.executeKernel(moitie, nom_kernel);
   clm.getResultat();
   std::ofstream fd;
   fd.open("tirages.data");
   for(int g = 0; g < nb_tirages; g++) {
-    unsigned long tmp = TIRAGES[g];
-    std::cout << tmp << " ";
+    printf("%f ", TIRAGES[g]);
+    fd << TIRAGES[g] << std::endl;
   }
   fd.close();
 }
 
+// estimation de Pi
 void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug) {
   CLManager clm;
   clm.init(0,1,ENABLE_PROFILING);
@@ -350,13 +403,8 @@ void calcul1(float seuil_confiance,
   CLManager clm;
   std::string nom_kernel("calcul_trajectoires");
   clm.init(0,1,ENABLE_PROFILING);
-  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
-  //  clm.loadKernels("kernels/var-mc.cl");
-
-  //  clm.init(0,0,ENABLE_PROFILING);
-  //  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
-  //  clm.loadKernels("kernels/var-mc.cl");
-
+  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+  clm.loadKernels("kernels/var-mc.cl");
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
   clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);

@@ -1,4 +1,4 @@
-
+#define PI 3.14159265358979f
 // ------------------------------ RNG ------------------------------
 /*
   Part of MWC64X by David Thomas, dt10@imperial.ac.uk
@@ -135,13 +135,67 @@ __kernel void EstimatePi(__global int *n,
   acc[get_global_id(0)] = count;
 }
 
-__kernel void distribution_gauss(__global ulong *TIRAGES)
+// normalisation vers (0,1] et transformation de Box-Muller
+void normalisation_bm(uint u1, uint u2, float *x1, float *x2) {
+  uint _u1 = u1 % 4000000000;
+  uint _u2 = u2 % 4000000000;
+  float norm_u1 = ((float) (_u1 % 4000000000)) / 4000000000.0f;
+  float norm_u2 = ((float) (_u2 % 4000000000)) / 4000000000.0f;
+  float r = native_sqrt(-2.0f * log(norm_u1));
+  float phi = 2.0f * PI * ((float) norm_u2);
+  *x1 = r * native_cos(phi);
+  *x2 = r * native_sin(phi);
+}
+
+float fast_norm_bm(uint u1, uint u2) {
+  uint _u1 = u1 % 4000000000;
+  uint _u2 = u2 % 4000000000;
+  float norm_u1 = ((float) (_u1 % 4000000000)) / 4000000000.0f;
+  float norm_u2 = ((float) (_u2 % 4000000000)) / 4000000000.0f;
+  float r = native_sqrt(-2.0f * log(norm_u1));
+  float phi = 2.0f * PI * ((float) norm_u2);
+  return r * native_cos(phi);
+}
+
+__kernel void distribution_gauss(__global float *TIRAGES, __global int *moitie)
 {
   mwc64x_state_t rng;
-  MWC64X_SeedStreams(&rng, 0, 2);
-  ulong u1 = MWC64X_NextUint(&rng);
-  ulong u2 = MWC64X_NextUint(&rng);
+  ulong samplesPerStream=((*moitie) * 2)/get_global_id(0);
+  MWC64X_SeedStreams(&rng, get_global_id(0), 2 * samplesPerStream);
+  float u1 = 0.0f;
+  float u2 = 0.0f;
+  normalisation_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng), &u1, &u2);
   TIRAGES[get_global_id(0)] = u1;
+  TIRAGES[get_global_id(0) + (*moitie)] = u2;
+}
+
+__kernel void calcul_trajectoires2(__global const float *RENDEMENTS,
+                                   __global const float *VOLS,
+                                   __global const float *TI,
+                                   __global float *TIRAGES,
+                                   __global float *rendement,
+                                   __constant int *nb_actions,
+                                   __constant int *horizon) {
+  TIRAGES[get_global_id(0)] = 0;
+
+  float tmp;
+  mwc64x_state_t rng;
+  ulong samplesPerStream=(*nb_actions)/get_global_id(0);
+  MWC64X_SeedStreams(&rng, get_global_id(0), 2 * samplesPerStream);
+  for(int a = 0; a < (*nb_actions); a++) {
+    tmp = RENDEMENTS[a];
+    for(int t = 1; t <= (*horizon); t++) {
+      int index = get_global_id(0) * (*nb_actions);
+      index += a * (*horizon);
+      index += t;
+      //float u1 = 0.0f;
+      //float u2 = 0.0f;
+      //normalisation_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng), &u1, &u2);
+      tmp = tmp*exp(TI[a] * 1 + VOLS[a] * 1 * fast_norm_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng)));
+    }
+    TIRAGES[get_global_id(0)] += tmp;
+  }
+  TIRAGES[get_global_id(0)] = (*rendement) - TIRAGES[get_global_id(0)];
 }
 
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
