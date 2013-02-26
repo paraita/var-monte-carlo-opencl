@@ -121,18 +121,27 @@ __kernel void EstimatePi(__global int *n,
 			 __global int *acc)
 {
   mwc64x_state_t rng;
-  ulong samplesPerStream = (*n)/get_global_size(0);
+  ulong samplesPerStream=(*n)/get_global_size(0);
   MWC64X_SeedStreams(&rng, (*baseOffset), 2*samplesPerStream);
-  uint count = 0;
-  for(uint i = 0; i < samplesPerStream; i++){
-    ulong x = MWC64X_NextUint(&rng);
-    ulong y = MWC64X_NextUint(&rng);
-    ulong x2 = x * x;
-    ulong y2 = y * y;
-    if(x2 + y2 >= x2)
-      count++;
-  }
+    uint count=0;
+    for(uint i=0;i<samplesPerStream;i++){
+        ulong x=MWC64X_NextUint(&rng);
+        ulong y=MWC64X_NextUint(&rng);
+        ulong x2=x*x;
+        ulong y2=y*y;
+        if(x2+y2 >= x2)
+            count++;
+    }
   acc[get_global_id(0)] = count;
+}
+
+__kernel void distribution_gauss(__global ulong *TIRAGES)
+{
+  mwc64x_state_t rng;
+  MWC64X_SeedStreams(&rng, 0, 2);
+  ulong u1 = MWC64X_NextUint(&rng);
+  ulong u2 = MWC64X_NextUint(&rng);
+  TIRAGES[get_global_id(0)] = u1;
 }
 
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
