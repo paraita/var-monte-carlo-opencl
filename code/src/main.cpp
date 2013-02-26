@@ -35,7 +35,7 @@ void calcul3(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
 // test_vide
 void calcul4();
 // calcul 1 + variance et interval de confiance
-//void calcul5(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
+void calcul5(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // calcul de variance
 float calculVariance(	float *TIRAGES,
 			int *nb_Simulation,
@@ -121,7 +121,6 @@ float calculVariance(	float *TIRAGES,
 			int *nb_THREAD,  
 			float *ESPERANCE )
 {
-  std::cout << "on attque la variance" ;
   float variance=0.0;
   CLManager clm;
   std::string nom_kernel("calcul_variance");
@@ -140,18 +139,124 @@ float calculVariance(	float *TIRAGES,
   // recuperation des résultats                                                                                                              
   clm.getResultat();
   std::cout << " var " << ESPERANCE[(*nb_THREAD-5)] << " ";
-  
-
+  //TODO
   std::cout << "la variance vaut en retour normal " << variance << std::endl;
   // on calcul la variance
 
   //  for(int j=0; j < (*nb_THREAD);j++){if(j> 0.99999*(*nb_THREAD))std::cout << ESPERANCE[j]<< " ";}
   
-  std::cout << "interval de confiance" << 1.96*sqrt(ESPERANCE[(*nb_THREAD-5)])/(sqrt(*nb_Simulation)) << " nb simul " <<*nb_Simulation ; 
-  std::cout << "fin du calcul " << std::endl;
+  std::cout << "interval de confiance" << 1.96*sqrt(ESPERANCE[(*nb_THREAD-5)])/(sqrt(*nb_Simulation)) << std::endl ; 
   return ESPERANCE[(*nb_THREAD-5)];
 }
 
+void calcul5(float seuil_confiance,
+	     int nb_tirages,
+	     std::string portefeuille,
+	     int T,
+	     bool batch_mode) {
+  Portefeuille P(portefeuille);
+  float *RENDEMENTS = P.getRendements();
+  float *VOLS = P.getVolatilites();
+  float *TI = P.getTauxInterets();
+  int NB_ACTIONS = P.getTaille();
+  
+  // debug
+  if (batch_mode)
+    {
+      std::cout << "Mémoire utilisée:" << std::endl;
+      int taille_rendements = sizeof(float) * NB_ACTIONS;
+      std::cout << "\tRENDEMENTS: " << taille_rendements << " octets" << std::endl;
+      int taille_vols = sizeof(float) * NB_ACTIONS;
+      std::cout << "\tVOLS: " << taille_vols << " octets" << std::endl;
+      int taille_ti = sizeof(float) * NB_ACTIONS;
+      std::cout << "\tTI: " << taille_ti << " octets" << std::endl;
+      int taille_n = sizeof(float) * NB_ACTIONS * T  * nb_tirages;
+      std::cout << "\tN: " << taille_n << " octets" << std::endl;
+      int taille_nb_actions = sizeof(int);
+      std::cout << "\tvariable nb_actions: " << taille_nb_actions << " octets" << std::endl;
+      int taille_horizon = sizeof(int);
+      std::cout << "\tvariable horizon: " << taille_horizon << " octets" << std::endl;
+      int total = taille_rendements + taille_vols + taille_ti + taille_n + taille_nb_actions + taille_horizon;
+      std::cout << "\tTOTAL: " << total / 1000000.0 << " Mo" << std::endl;
+    }
+
+  // ~~~~~~~~~~~~~~~~~~~~~~ RNG ~~~~~~~~~~~~~~~~~~~~~~~
+  boost::chrono::high_resolution_clock::time_point start_rng = boost::chrono::high_resolution_clock::now();
+  float *N = (float *) calloc(NB_ACTIONS * nb_tirages * T, sizeof(float));
+  float *TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
+  boost::mt19937 rng;
+  boost::normal_distribution<> nd(0.0, 1.0);
+  boost::variate_generator< boost::mt19937&, boost::normal_distribution<> > var_nor(rng, nd);
+  for(int g = 0; g < NB_ACTIONS * nb_tirages * T; g++) {
+    N[g] = var_nor();
+  }
+  boost::chrono::nanoseconds ns_rng = boost::chrono::high_resolution_clock::now() - start_rng;
+  // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
+  CLManager clm;
+  std::string nom_kernel("calcul_trajectoires");
+  std::cout << "allp" << std::endl;
+  clm.init(0,1,ENABLE_PROFILING);
+  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+  //  clm.loadKernels("kernels/var-mc.cl");
+
+//  clm.init(0,0,ENABLE_PROFILING);
+  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+//  clm.loadKernels("kernels/var-mc.cl");
+
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
+  clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
+  clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
+  clm.setKernelArg(nom_kernel, 3, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
+  clm.setKernelArg(nom_kernel, 4, nb_tirages, sizeof(float), TIRAGES, true); // sortie
+  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false);
+  // run sur le GPU
+  clm.executeKernel(nb_tirages, nom_kernel);
+  // recuperation des résultats
+  clm.getResultat();
+  // on calcul la variance 
+
+  int  nombre_TIRAGES_par_Thread = 1;
+  float esperance=0;
+  float variance=0;
+  int   nb_THREAD = nb_tirages;
+  float *ESPERANCE = (float *) calloc(nb_tirages, sizeof(float));
+
+  esperance = calculEsperance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&nb_THREAD,ESPERANCE);
+  variance =  calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,esperance,&nb_THREAD,ESPERANCE);
+
+  // fin calcul de variance 
+  /*   zone de  test ! 
+  float test=0.0;
+  float test2=0.0;
+  for(int i =0; i < nb_tirages-3; i++){
+    test+=TIRAGES[i]/(nb_tirages);
+  }
+  for(int i =0; i < nb_tirages-3; i++){
+    test2+=(TIRAGES[i]-test)*(TIRAGES[i]-test)/(nb_tirages-1.0);
+  }
+ 
+  std::cout << "esp calculer cpu " << test << "var cpu" << test2 << std::endl;
+  */
+  
+  // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
+  boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
+  std::sort(TIRAGES, TIRAGES+nb_tirages);
+  boost::chrono::nanoseconds ns_sort = boost::chrono::high_resolution_clock::now() - start_sort;
+  
+  int percentile = nb_tirages * int(1.0 - seuil_confiance);
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  float t_rng = ns_rng.count() / 1000000.0;
+  float t_sort = ns_sort.count() / 1000000.0;
+  std::cout << nb_tirages << ";";
+  std::cout << P.getRendement() << ";";
+  std::cout << TIRAGES[percentile+1] << ";";
+  std::cout << NB_ACTIONS * nb_tirages * T * sizeof(float) << ";";
+  std::cout << t_rng << ";";
+  std::cout << clm.getGpuTime() << ";";
+  std::cout << t_sort << std::endl;
+}
 
 
 
@@ -251,9 +356,9 @@ void calcul1(float seuil_confiance,
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
   //  clm.loadKernels("kernels/var-mc.cl");
 
-//  clm.init(0,0,ENABLE_PROFILING);
-  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
-//  clm.loadKernels("kernels/var-mc.cl");
+  //  clm.init(0,0,ENABLE_PROFILING);
+  //  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+  //  clm.loadKernels("kernels/var-mc.cl");
 
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
@@ -267,33 +372,6 @@ void calcul1(float seuil_confiance,
   clm.executeKernel(nb_tirages, nom_kernel);
   // recuperation des résultats
   clm.getResultat();
-  // on calcul la variance 
-
-  int  nombre_TIRAGES_par_Thread = 1;
-  float esperance=0;
-  float variance=0;
-  int   nb_THREAD = nb_tirages;
-  float *ESPERANCE = (float *) calloc(nb_tirages, sizeof(float));
-
-  std::cout << "on attque les calcules de pierre" << std::endl; 
-  esperance = calculEsperance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&nb_THREAD,ESPERANCE);
-  variance =  calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,esperance,&nb_THREAD,ESPERANCE);
-  std::cout << "variance" << variance << std::endl;
-  double inter = 1.96*variance/sqrt(nb_tirages); 
-  std::cout << "interval de confiance " << inter << std::endl;
-  // fin calcul de variance 
-  
-  float test=0.0;
-  float test2=0.0;
-  for(int i =0; i < nb_tirages-3; i++){
-    test+=TIRAGES[i]/(nb_tirages);
-  }
-  for(int i =0; i < nb_tirages-3; i++){
-    test2+=(TIRAGES[i]-test)*(TIRAGES[i]-test)/(nb_tirages-1.0);
-  }
- 
-  std::cout << "esp calculer cpu " << test << "var cpu" << test2 << std::endl;
-  return;
   
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
