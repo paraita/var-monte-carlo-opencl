@@ -70,10 +70,11 @@ int main(int argc, char *argv[])
   
   if (param_ok) {
 
-    calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    calcul5(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     //calcul2();
     //calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // marche
     //calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // marche
+    std::cout << "calcul 3" <<std::endl;
     calcul3(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode); // todo
     std::cout << "fin du programme" << std::endl;
     return EXIT_SUCCESS;
@@ -90,7 +91,6 @@ float calculEsperance(	float *TIRAGES,
 			int *nb_THREAD, 
 			float *ESPERANCE )
 {
-  std::cout << "on attaque l'esperance"<<std::endl;
   float esp=(float)0.0;
   float  *esperance =&esp;
   CLManager clm;
@@ -145,7 +145,7 @@ float calculVariance(	float *TIRAGES,
 
   //  for(int j=0; j < (*nb_THREAD);j++){if(j> 0.99999*(*nb_THREAD))std::cout << ESPERANCE[j]<< " ";}
   
-  std::cout << "interval de confiance" << 1.96*sqrt(ESPERANCE[(*nb_THREAD-5)])/(sqrt(*nb_Simulation)) << std::endl ; 
+  std::cout << "interval de confiance " << 1.96*sqrt(ESPERANCE[(*nb_THREAD-5)])/(sqrt(*nb_Simulation)) << std::endl ; 
   return ESPERANCE[(*nb_THREAD-5)];
 }
 
@@ -194,14 +194,13 @@ void calcul5(float seuil_confiance,
   // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
   CLManager clm;
   std::string nom_kernel("calcul_trajectoires");
-  std::cout << "allp" << std::endl;
   clm.init(0,1,ENABLE_PROFILING);
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
   //  clm.loadKernels("kernels/var-mc.cl");
 
-//  clm.init(0,0,ENABLE_PROFILING);
-  //clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
-//  clm.loadKernels("kernels/var-mc.cl");
+  //  clm.init(0,0,ENABLE_PROFILING);
+  //  clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
+  //  clm.loadKernels("kernels/var-mc.cl");
 
   clm.compileKernel(nom_kernel);
   clm.setKernelArg(nom_kernel, 0, NB_ACTIONS, sizeof(float), RENDEMENTS,false);
@@ -225,7 +224,7 @@ void calcul5(float seuil_confiance,
 
   esperance = calculEsperance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,&nb_THREAD,ESPERANCE);
   variance =  calculVariance(TIRAGES,&nb_tirages,&nombre_TIRAGES_par_Thread,esperance,&nb_THREAD,ESPERANCE);
-
+  
   // fin calcul de variance 
   /*   zone de  test ! 
   float test=0.0;
@@ -239,7 +238,6 @@ void calcul5(float seuil_confiance,
  
   std::cout << "esp calculer cpu " << test << "var cpu" << test2 << std::endl;
   */
-  
   // ~~~~~~~~~~~~~~ post-traitement VaR ~~~~~~~~~~~~~~~
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);
@@ -351,7 +349,6 @@ void calcul1(float seuil_confiance,
   // ~~~~~~~~~~~~~~~~~~~~~ OpenCL ~~~~~~~~~~~~~~~~~~~~~
   CLManager clm;
   std::string nom_kernel("calcul_trajectoires");
-  std::cout << "allp" << std::endl;
   clm.init(0,1,ENABLE_PROFILING);
   clm.loadKernels("/home/paittaha/var-monte-carlo-opencl/code/kernels/var-mc.cl");
   //  clm.loadKernels("kernels/var-mc.cl");
