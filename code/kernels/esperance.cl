@@ -16,8 +16,9 @@ __kernel void calcul_esperance(__global const float *TIRAGES,
  
   if(get_global_id(0) == 0){
     float esperance_tmp=0.0;
-    for(int j=0; j < (*nb_THREAD)-2 ; j++ ){
+    for(int j=0; j < (*nb_THREAD)-3 ; j++ ){
       esperance_tmp = esperance_tmp + ESPERANCE[j]/ ((*nb_Simulation)*1.0);
+      ESPERANCE[j]=esperance_tmp;
     }
   }
 }
