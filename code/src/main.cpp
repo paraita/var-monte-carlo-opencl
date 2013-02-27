@@ -24,31 +24,22 @@
 #include <boost/chrono.hpp>
 #define PRINT_USAGE "Usage: -c seuil_confiance -n nb_tirages -p portefeuille -t horizon [-b]"
 
-
+// parsing des parametres d'entree
 bool parse_args(int argc,char** argv,float* seuil_confiance,int* nb_tirages,std::string* p,int* horizon, bool* batch_mode);
 // RNG sur CPU, calcul trajectoires sur GPU, tri sur CPU
 void calcul1(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
-// RNG sur GPU
-void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
-// distribution gaussienne
-void calcul3(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // RNG sur GPU, calcul trajectoires sur GPU, tri sur CPU
-void calcul4(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
+void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // calcul 1 + variance et interval de confiance
 void calcul5(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 // calcul de variance
-float calculVariance(	float *TIRAGES,
-			int *nb_Simulation,
-			int *nb_value_par_thread,
-			float esperance,
-			int *nb_THREAD,  
-			float *ESPERANCE );
-
-float calculEsperance(	float *TIRAGES,
-			int *nb_Simulation,
-			int *nb_value_par_thread,
-			int *nb_THREAD, 
-			float *ESPERANCE );
+float calculVariance(float *TIRAGES,int *nb_Simulation,int *nb_value_par_thread,float esperance,int *nb_THREAD,float *ESPERANCE );
+// calcul de l'espérance
+float calculEsperance(float *TIRAGES,int *nb_Simulation,int *nb_value_par_thread,int *nb_THREAD,float *ESPERANCE);
+// estimation de PI par MC sur GPU
+void estimationPi(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
+// distribution gaussienne
+void distributionGaussienne(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug);
 
 int main(int argc, char *argv[])
 {
@@ -71,7 +62,7 @@ int main(int argc, char *argv[])
   if (param_ok) {
 
     //calcul5(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
-    calcul4(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     return EXIT_SUCCESS;
   }
   else {
@@ -251,7 +242,8 @@ void calcul5(float seuil_confiance,
   std::cout << t_sort << std::endl;
 }
 
-void calcul4(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug) {
+void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug) {
+  boost::chrono::high_resolution_clock::time_point start_all = boost::chrono::high_resolution_clock::now();
   Portefeuille P(portefeuille);
   float *RENDEMENTS = P.getRendements();
   float *VOLS = P.getVolatilites();
@@ -301,60 +293,14 @@ void calcul4(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
   int percentile = nb_tirages * int(1.0 - seuil_confiance);
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   float t_sort = ns_sort.count() / 1000000.0;
+  boost::chrono::nanoseconds ns_all = boost::chrono::high_resolution_clock::now() - start_all;
+  float t_all = ns_all.count() / 1000000.0;
   std::cout << nb_tirages << ";";
   std::cout << P.getRendement() << ";";
   std::cout << TIRAGES[percentile+1] << ";";
   std::cout << clm.getGpuTime() << ";";
-  std::cout << t_sort << std::endl;
-}
-
-// tirage de variables aléatoires gaussiennes
-void calcul3(float seuil_conficance,int nb_tirages,std::string portefeuille,int T,bool debug) {
-  CLManager clm;
-  clm.init(0,1);
-  std::string nom_kernel("distribution_gauss");
-  clm.loadKernels("kernels/var-mc.cl");
-  clm.compileKernel(nom_kernel);
-  float *TIRAGES = NULL;
-  int moitie = (nb_tirages / 2);
-  TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
-  clm.setKernelArg(nom_kernel, 0, nb_tirages, sizeof(float), TIRAGES, true);
-  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &moitie, false);
-  clm.executeKernel(moitie, nom_kernel);
-  clm.getResultat();
-  std::ofstream fd;
-  fd.open("tirages.data");
-  for(int g = 0; g < nb_tirages; g++) {
-    printf("%f ", TIRAGES[g]);
-    fd << TIRAGES[g] << std::endl;
-  }
-  fd.close();
-}
-
-// estimation de Pi
-void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug) {
-  CLManager clm;
-  clm.init(0,1,ENABLE_PROFILING);
-  int ul_nb_tirages = nb_tirages;
-  int offset = 0;
-  int *acc = NULL;
-  acc = (int *) calloc(nb_tirages, sizeof(int));
-  std::string nom_kernel("EstimatePi");
-  clm.loadKernels("kernels/var-mc.cl");
-  clm.compileKernel(nom_kernel);
-  clm.setKernelArg(nom_kernel, 0, 1, sizeof(int), &ul_nb_tirages, false);
-  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &offset, false);
-  clm.setKernelArg(nom_kernel, 2, nb_tirages, sizeof(int), acc, true);
-  clm.executeKernel(nb_tirages, nom_kernel);
-  clm.getResultat();
-  
-  float total = 0;
-  for (int i = 0; i < nb_tirages; i++) {
-    total += acc[i];
-  }
-  
-  float frac = total / (float)ul_nb_tirages;
-  printf("PI: %f\n", 4 * frac);
+  std::cout << t_sort << ";";
+  std::cout << t_all << std::endl;
 }
 
 void calcul1(float seuil_confiance,
@@ -362,7 +308,9 @@ void calcul1(float seuil_confiance,
 	     std::string portefeuille,
 	     int T,
 	     bool batch_mode) {
+  boost::chrono::high_resolution_clock::time_point start_all = boost::chrono::high_resolution_clock::now();
   Portefeuille P(portefeuille);
+  float rendement = P.getRendement();
   float *RENDEMENTS = P.getRendements();
   float *VOLS = P.getVolatilites();
   float *TI = P.getTauxInterets();
@@ -410,9 +358,10 @@ void calcul1(float seuil_confiance,
   clm.setKernelArg(nom_kernel, 1, NB_ACTIONS, sizeof(float), VOLS, false);
   clm.setKernelArg(nom_kernel, 2, NB_ACTIONS, sizeof(float), TI, false);
   clm.setKernelArg(nom_kernel, 3, NB_ACTIONS * nb_tirages * T, sizeof(float), N, false);
-  clm.setKernelArg(nom_kernel, 4, nb_tirages, sizeof(float), TIRAGES, true); // sortie
-  clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
-  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false);
+  clm.setKernelArg(nom_kernel, 4, 1, sizeof(float), &rendement, false);
+  clm.setKernelArg(nom_kernel, 5, nb_tirages, sizeof(float), TIRAGES, true); // sortie
+  clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &NB_ACTIONS, false);
+  clm.setKernelArg(nom_kernel, 7, 1, sizeof(int), &T, false);
   // run sur le GPU
   clm.executeKernel(nb_tirages, nom_kernel);
   // recuperation des résultats
@@ -427,13 +376,16 @@ void calcul1(float seuil_confiance,
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   float t_rng = ns_rng.count() / 1000000.0;
   float t_sort = ns_sort.count() / 1000000.0;
+  boost::chrono::nanoseconds ns_all = boost::chrono::high_resolution_clock::now() - start_all;
+  float t_all = ns_all.count() / 1000000.0;
   std::cout << nb_tirages << ";";
   std::cout << P.getRendement() << ";";
   std::cout << TIRAGES[percentile+1] << ";";
   std::cout << NB_ACTIONS * nb_tirages * T * sizeof(float) << ";";
   std::cout << t_rng << ";";
   std::cout << clm.getGpuTime() << ";";
-  std::cout << t_sort << std::endl;
+  std::cout << t_sort << ";";
+  std::cout << t_all << std::endl;
 }
 
 bool parse_args(int argc,
@@ -552,7 +504,52 @@ bool parse_args(int argc,
   }
 }
 
+// tirage de variables aléatoires gaussiennes
+void distributionGaussienne(float seuil_conficance,int nb_tirages,std::string portefeuille,int T,bool debug) {
+  CLManager clm;
+  clm.init(0,1);
+  std::string nom_kernel("distribution_gauss");
+  clm.loadKernels("kernels/var-mc.cl");
+  clm.compileKernel(nom_kernel);
+  float *TIRAGES = NULL;
+  int moitie = (nb_tirages / 2);
+  TIRAGES = (float *) calloc(nb_tirages, sizeof(float));
+  clm.setKernelArg(nom_kernel, 0, nb_tirages, sizeof(float), TIRAGES, true);
+  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &moitie, false);
+  clm.executeKernel(moitie, nom_kernel);
+  clm.getResultat();
+  std::ofstream fd;
+  fd.open("tirages.data");
+  for(int g = 0; g < nb_tirages; g++) {
+    printf("%f ", TIRAGES[g]);
+    fd << TIRAGES[g] << std::endl;
+  }
+  fd.close();
+}
 
+// estimation de Pi
+void estimationPi(float seuil_confiance,int nb_tirages,std::string portefeuille,int T,bool debug) {
+  CLManager clm;
+  clm.init(0,1,ENABLE_PROFILING);
+  int ul_nb_tirages = nb_tirages;
+  int offset = 0;
+  int *acc = NULL;
+  acc = (int *) calloc(nb_tirages, sizeof(int));
+  std::string nom_kernel("EstimatePi");
+  clm.loadKernels("kernels/var-mc.cl");
+  clm.compileKernel(nom_kernel);
+  clm.setKernelArg(nom_kernel, 0, 1, sizeof(int), &ul_nb_tirages, false);
+  clm.setKernelArg(nom_kernel, 1, 1, sizeof(int), &offset, false);
+  clm.setKernelArg(nom_kernel, 2, nb_tirages, sizeof(int), acc, true);
+  clm.executeKernel(nb_tirages, nom_kernel);
+  clm.getResultat();
+  float total = 0;
+  for (int i = 0; i < nb_tirages; i++) {
+    total += acc[i];
+  }
+  float frac = total / (float)ul_nb_tirages;
+  printf("PI: %f\n", 4 * frac);
+}
 
 
 

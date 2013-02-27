@@ -188,9 +188,6 @@ __kernel void calcul_trajectoires2(__global const float *RENDEMENTS,
       int index = get_global_id(0) * (*nb_actions);
       index += a * (*horizon);
       index += t;
-      //float u1 = 0.0f;
-      //float u2 = 0.0f;
-      //normalisation_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng), &u1, &u2);
       tmp = tmp*exp(TI[a] * 1 + VOLS[a] * 1 * fast_norm_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng)));
     }
     TIRAGES[get_global_id(0)] += tmp;
@@ -199,12 +196,13 @@ __kernel void calcul_trajectoires2(__global const float *RENDEMENTS,
 }
 
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
-				  __global const float *VOLS,
-				  __global const float *TI,
-				  __global const float *ALEA,
-				  __global float *TIRAGES,
-				  __constant int *nb_actions,
-				  __constant int *horizon) {
+				                          __global const float *VOLS,
+				                          __global const float *TI,
+				                          __global const float *ALEA,
+                                  __global float *rendement,
+				                          __global float *TIRAGES,
+				                          __constant int *nb_actions,
+				                          __constant int *horizon) {
   int i = get_global_id(0);
   TIRAGES[i] = 0;
   float tmp;
@@ -218,4 +216,5 @@ __kernel void calcul_trajectoires(__global const float *RENDEMENTS,
     }
     TIRAGES[i]+=tmp;
   }
+  TIRAGES[i] = (*rendement) - TIRAGES[i];
 }
