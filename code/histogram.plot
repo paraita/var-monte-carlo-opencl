@@ -1,14 +1,14 @@
 reset
 
 # legendes
-set title "Distribution des pertes"
-set xlabel "pertes brutes"
+set title "Distribution des tirages"
+set xlabel "valeurs"
 set ylabel "freq"
 
 # params
 n=1000	#number of intervals
-max=5.	#max value
-min=-5.	#min value
+max=1000000.	#max value
+min=-1000.	#min value
 width=(max-min)/n	#interval width
 
 # fonction histogramme

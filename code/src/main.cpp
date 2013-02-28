@@ -62,7 +62,9 @@ int main(int argc, char *argv[])
   if (param_ok) {
 
     //calcul5(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    //calcul1(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+    //distributionGaussienne(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     return EXIT_SUCCESS;
   }
   else {
@@ -283,12 +285,25 @@ void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
   clm.setKernelArg(nom_kernel, 4, 1, sizeof(float), &rendement, false);
   clm.setKernelArg(nom_kernel, 5, 1, sizeof(int), &NB_ACTIONS, false);
   clm.setKernelArg(nom_kernel, 6, 1, sizeof(int), &T, false);
+  clm.setKernelArg(nom_kernel, 7, 1, sizeof(int), &nb_tirages, false);
   clm.executeKernel(nb_tirages, nom_kernel);
   clm.getResultat();
   // tri sur CPU
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);
   boost::chrono::nanoseconds ns_sort = boost::chrono::high_resolution_clock::now() - start_sort;
+
+  //std::ofstream fd;
+  //fd.open("tirages.data");
+  FILE *fd;
+  fd = fopen("tirages.data", "w");
+  for(int g = 0; g < nb_tirages; g++) {
+    fprintf(fd, "%f\n", TIRAGES[g]);
+    //fd << TIRAGES[g] << std::endl;
+  }
+  fclose(fd);
+  //fd.close();
+  
   // VaR
   int percentile = nb_tirages * int(1.0 - seuil_confiance);
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -371,7 +386,12 @@ void calcul1(float seuil_confiance,
   boost::chrono::high_resolution_clock::time_point start_sort = boost::chrono::high_resolution_clock::now();
   std::sort(TIRAGES, TIRAGES+nb_tirages);
   boost::chrono::nanoseconds ns_sort = boost::chrono::high_resolution_clock::now() - start_sort;
-  
+  std::ofstream fd;
+  fd.open("tirages.data");
+  for(int g = 0; g < nb_tirages; g++) {
+    fd << TIRAGES[g] << std::endl;
+  }
+  fd.close();
   int percentile = nb_tirages * int(1.0 - seuil_confiance);
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   float t_rng = ns_rng.count() / 1000000.0;
@@ -521,7 +541,7 @@ void distributionGaussienne(float seuil_conficance,int nb_tirages,std::string po
   std::ofstream fd;
   fd.open("tirages.data");
   for(int g = 0; g < nb_tirages; g++) {
-    printf("%f ", TIRAGES[g]);
+    //printf("%f ", TIRAGES[g]);
     fd << TIRAGES[g] << std::endl;
   }
   fd.close();

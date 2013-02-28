@@ -84,7 +84,7 @@ bench-nef: all
 
 plot: all
 	@echo "execution"
-	./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 1000000 -p ./portefeuille.csv -t 1
+	./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 1966080 -p ./portefeuille.csv -t 1
 	@echo "plot en cours..."
 	@gnuplot histogram.plot
 
