@@ -186,17 +186,15 @@ __kernel void calcul_trajectoires2(__global const float *RENDEMENTS,
   float tmp;
   mwc64x_state_t rng;
   ulong samplesPerStream=(*horizon)*(*nb_actions);
-  //ulong samplesPerStream=(*nb_tirages)/get_global_size(0);
   MWC64X_SeedStreams(&rng, 0, samplesPerStream);
   for(int a = 0; a < (*nb_actions); a++) {
     tmp = RENDEMENTS[a];
     for(int t = 1; t <= (*horizon); t++) {
       tmp = tmp * exp((TI[a] - ((VOLS[a] * VOLS[a]) / 2) * 1 + VOLS[a] * fast_norm_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng))));
-      //tmp = tmp*exp(TI[a] + VOLS[a] * fast_norm_bm(MWC64X_NextUint(&rng), MWC64X_NextUint(&rng)));
     }
     TIRAGES[get_global_id(0)] += tmp;
   }
-  //TIRAGES[get_global_id(0)] = (*rendement) - TIRAGES[get_global_id(0)];
+  TIRAGES[get_global_id(0)] = TIRAGES[get_global_id(0)] - (*rendement);
 }
 
 __kernel void calcul_trajectoires(__global const float *RENDEMENTS,

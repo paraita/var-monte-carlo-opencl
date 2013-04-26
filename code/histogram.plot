@@ -5,9 +5,13 @@ set title "Distribution des tirages"
 set xlabel "valeurs"
 set ylabel "freq"
 
+# output
+set term png
+set output "representation.png"
+
 # params
 n=1000	#number of intervals
-max=1000000.	#max value
+max=750000.	#max value
 min=-1000.	#min value
 width=(max-min)/n	#interval width
 
