@@ -16,10 +16,10 @@ private:
 	float volatilite;
 	float rendement;
 	float tauxInteret;
+	int poids;
 	std::string nom;
 public:
-	Actif();
-	Actif(float v, float n, float t, std::string s);
+	Actif(float v,float n,float t,std::string s,int p);
 	const std::string& getNom() const;
 	void setNom(const std::string& nom);
 	float getRendement() const;
@@ -28,6 +28,8 @@ public:
 	void setTauxInteret(float tauxInteret);
 	float getVolatilite() const;
 	void setVolatilite(float volatilite);
+	int getPoids() const;
+	void setPoids(int poids);
 };
 
 #endif /* ACTIF_H_ */

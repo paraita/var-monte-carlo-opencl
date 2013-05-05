@@ -9,8 +9,9 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <stdlib.h>
 #ifdef __APPLE__
-#include <OpenCL/opencl.h>
+#include <OpenCL/opencl.h> // -framework OpenCL
 #else
 #include <CL/cl.h>
 #endif

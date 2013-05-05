@@ -9,17 +9,12 @@
 #include <iostream>
 #include "Actif.h"
 
-Actif::Actif() {
-  volatilite=0;
-  rendement=0;
-  tauxInteret=0;
-  nom="";
-}
 
-Actif::Actif(float v, float n, float t, std::string s){
+Actif::Actif(float v, float n, float t, std::string s, int p){
   volatilite=v;
   rendement=n;
   tauxInteret=t;
+  poids = p;
   nom=s;
 }
 
@@ -53,6 +48,14 @@ float Actif::getVolatilite() const {
 
 void Actif::setVolatilite(float volatilite) {
   this->volatilite = volatilite;
+}
+
+int Actif::getPoids() const {
+	return poids;
+}
+
+void Actif::setPoids(int poids) {
+	this->poids = poids;
 }
 
 std::ostream& operator<<(std::ostream& os, Actif a) {

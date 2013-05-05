@@ -6,6 +6,7 @@
  */
 
 #include "Portefeuille.h"
+#include "Actif.h"
 
 Portefeuille::Portefeuille(std::vector<Actif> p){
   portefeuille=p;
@@ -27,7 +28,8 @@ float* Portefeuille::getVolatilites(){
   float *tabVola= new float[portefeuille.size()];
   unsigned int i;
   for (i = 0; i < portefeuille.size(); ++i) {
-    tabVola[i]=portefeuille[i].getVolatilite();
+	  Actif tmp = portefeuille[i];
+	  tabVola[i] = tmp.getVolatilite();
   }
   return tabVola;
 }
@@ -36,7 +38,8 @@ float* Portefeuille::getRendements(){
   float *tabRendement= new float[portefeuille.size()];
   unsigned int i;
   for (i = 0; i < portefeuille.size(); ++i) {
-    tabRendement[i]=portefeuille[i].getRendement();
+	  Actif tmp = portefeuille[i];
+	  tabRendement[i] = tmp.getRendement();
   }
   return tabRendement;
 }
@@ -45,7 +48,8 @@ float* Portefeuille::getTauxInterets(){
   float *tabtaux= new float[portefeuille.size()];
   unsigned int i;
   for (i = 0; i < portefeuille.size(); ++i) {
-    tabtaux[i]=portefeuille[i].getTauxInteret();
+	  Actif tmp = portefeuille[i];
+	  tabtaux[i] = tmp.getTauxInteret();
   }
   return tabtaux;
 }
@@ -53,7 +57,8 @@ float* Portefeuille::getTauxInterets(){
 float Portefeuille::getRendement() {
   float rendement_portefeuille = 0;
   for (int i = 0; i < portefeuille.size(); i++) {
-    rendement_portefeuille += portefeuille[i].getRendement();
+	  Actif tmp = portefeuille[i];
+	  rendement_portefeuille += tmp.getRendement();
   }
   return rendement_portefeuille;
 }
@@ -83,7 +88,7 @@ void Portefeuille::readCSV(std::vector< Actif >& tab,std::string path) {
 	    volatilite=::atof(cell.c_str());
 	  }else if(iterateur == 3){
 	    ti=::atof(cell.c_str());
-	    Actif tmp(volatilite,rendement,ti,nom);
+	    Actif tmp(volatilite,rendement,ti,nom,1);
 	    tab.push_back(tmp);
 	    iterateur=0;
 	  }

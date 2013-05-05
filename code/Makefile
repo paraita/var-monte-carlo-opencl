@@ -41,7 +41,7 @@ CFLAGS := -Wno-write-strings -DUNIX
 
 # targets
 EXECUTABLE := pfe
-SRC := Actif.cpp Portefeuille.cpp CLManager.cpp main.cpp
+SRC := Actif.cpp Portefeuille.cpp utils.cpp tests.cpp CLManager.cpp main.cpp
 OBJS := $(SRC:.cpp=.o)
 LOBJS := $(patsubst %.o,$(OBJDIR)/%.o,$(OBJS))
 
@@ -56,7 +56,7 @@ NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB) $(BOOST_LIB)
 %.o : $(SRCDIR)/%.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $< $(OPENCL_INC) $(BOOST_INC)
 
-all: arch-cible $(TARGET)
+all: clean arch-cible $(TARGET)
 	@echo "compilation OK"
 
 arch-cible:
