@@ -2,5 +2,5 @@ language: cpp
 compiler:
   - clang
 before_script:
-  - sudo apt-get install libboost*
+  - sudo apt-get install libboost-all-dev
 script: cd code;make all
