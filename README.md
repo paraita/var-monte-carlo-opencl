@@ -1,5 +1,8 @@
 # VaRCL #
 
+[![Build Status](https://travis-ci.org/paraita/var-monte-carlo-opencl.png)](https://travis-ci.org/paraita/var-monte-carlo-opencl)
+
+
 VaRCL is an OpenCL implementation of [VaR](http://en.wikipedia.org/wiki/Value_at_risk) [Monte-Carlo](http://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance) calculation.
 
 ## Installation ##
