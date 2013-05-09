@@ -6,13 +6,14 @@ set xlabel "valeurs"
 set ylabel "freq"
 
 # output
-set term png
-set output "representation.png"
+# ne fonctionne pas sous osx
+#set term png
+#set output "representation.png"
 
 # params
 n=1000	#number of intervals
-max=750000.	#max value
-min=-1000.	#min value
+max=400.	#max value
+min=-200.	#min value
 width=(max-min)/n	#interval width
 
 # fonction histogramme
