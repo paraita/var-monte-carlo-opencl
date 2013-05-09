@@ -1,5 +1,6 @@
 language: cpp
 compiler:
   - clang
-# Change this to your needs
+before_script:
+  - sudo apt-get install libboost*
 script: cd code;make all
