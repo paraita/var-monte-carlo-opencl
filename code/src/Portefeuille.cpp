@@ -11,9 +11,6 @@
 #include <boost/algorithm/string.hpp>
 #include <cstdlib>
 
-Portefeuille::Portefeuille(std::vector<Actif> p){
-  portefeuille=p;
-}
 
 Portefeuille::Portefeuille(std::string path){
 	//readCSV(portefeuille,path);
