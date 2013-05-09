@@ -56,3 +56,6 @@ monjob.pbs.*
 
 # les fichiers caches de osx
 *.DS_Store
+
+# doc
+/doc/
