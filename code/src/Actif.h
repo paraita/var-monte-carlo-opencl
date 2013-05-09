@@ -19,6 +19,7 @@ private:
 	int poids;
 	std::string nom;
 public:
+	Actif(const Actif& a);
 	Actif(float v,float n,float t,std::string s,int p);
 	const std::string& getNom() const;
 	void setNom(const std::string& nom);

@@ -257,6 +257,7 @@ void calcul2(float seuil_confiance,int nb_tirages,std::string portefeuille,int T
       std::cout << "\tvariable horizon: " << taille_horizon << " octets" << std::endl;
       int total = taille_rendements + taille_vols + taille_ti + taille_nb_actions + taille_horizon;
       std::cout << "\tTOTAL: " << total / 1000000.0 << " Mo" << std::endl;
+      std::cout << P << std::endl;
     }
   // RNG + Tirages sur GPU
   CLManager clm;

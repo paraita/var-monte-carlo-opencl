@@ -9,6 +9,13 @@
 #include <iostream>
 #include "Actif.h"
 
+Actif::Actif(const Actif& a) {
+	this->volatilite = a.getVolatilite();
+	this->rendement = a.getRendement();
+	this->tauxInteret = a.getTauxInteret();
+	this->nom = a.getNom();
+	this->poids = a.getPoids();
+}
 
 Actif::Actif(float v, float n, float t, std::string s, int p){
   volatilite=v;
@@ -60,6 +67,9 @@ void Actif::setPoids(int poids) {
 
 std::ostream& operator<<(std::ostream& os, Actif a) {
   os << "{ Actif:" << a.getNom() << " [";
-  os << "rendement:" << a.getRendement() << ",taux:" << a.getTauxInteret() << "]}";
+  os << "rendement:" << a.getRendement() ;
+  os << ", vol:" << a.getVolatilite() ;
+  os << ", taux:" << a.getTauxInteret();
+  os << ", poids:" << a.getPoids() << "]}";
   return os;
 }

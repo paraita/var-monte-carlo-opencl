@@ -5,13 +5,7 @@
  *      Author: "Paraita Wohler <paraita.wohler@gmail.com>"
  */
 
-//#include <iostream>
-//#include <fstream>
-//#include <streambuf>
-//#include <algorithm>
-//#include <string>
-//#include <string.h>
-//#include <stdlib.h>
+
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -34,6 +28,7 @@ int main(int argc, char *argv[])
   bool batch_mode = false;
   
   // verif des parametres
+
   param_ok = parse_args(argc,
 			argv,
 			&seuil_confiance,
@@ -43,13 +38,15 @@ int main(int argc, char *argv[])
 			&batch_mode);
   
   if (param_ok) {
-    calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
+	  calcul2(seuil_confiance,nb_tirages,portefeuille,horizon,batch_mode);
     return EXIT_SUCCESS;
   }
   else {
     std::cout << PRINT_USAGE << std::endl;
     return EXIT_FAILURE;
   }
+
+  return EXIT_SUCCESS;
 }
 
 

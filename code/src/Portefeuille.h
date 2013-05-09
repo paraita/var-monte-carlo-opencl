@@ -27,6 +27,7 @@ class Portefeuille {
   float getRendement();
  private:
   std::vector<Actif> portefeuille;
+  void read(std::vector<Actif>& tab, std::string path);
   void readCSV(std::vector< Actif >& tab,std::string path);
 };
 
