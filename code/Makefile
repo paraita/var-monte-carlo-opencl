@@ -61,6 +61,10 @@ plot: all
 	@echo "plotting..."
 	@gnuplot histogram.plot
 
+doc: 
+	@echo "Generating documentation..."
+	doxygen config.doxygen
+
 $(TARGET): makedirs $(OBJS)
 	$(NVIDIA_LINKLINE)
 
