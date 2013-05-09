@@ -6,19 +6,19 @@
 ################################################################################
 
 
-# libs
+# libs (osx specific)
 BOOST_INC_OSX	 := -I/opt/local/include
 BOOST_LIB_OSX	 := -L/opt/local/lib -lboost_chrono-mt -lboost_system-mt
 OPENCL_LIB_OSX   := -framework OpenCL
 OPENCL_LIB_LINUX := -lOpenCL -lboost_chrono -lboost_system
 ifeq ($(shell uname), Linux)
-# linux en general
-OPENCL_LIB       := $(OPENCL_LIB_LINUX)
+# libs (GNU/Linux specific)
+OPENCL_LIB   := $(OPENCL_LIB_LINUX)
 BOOST_INC	 := 
 BOOST_LIB	 := -lOpenCL -lboost_chrono -lboost_system
 else
-OPENCL_LIB       := $(OPENCL_LIB_OSX)
-BOOST_INC	 := $(BOOST_INC_OSX)
+OPENCL_LIB   := $(OPENCL_LIB_OSX)
+BOOST_INC	 := $(BOOST_INC_OSX) 
 BOOST_LIB	 := $(BOOST_LIB_OSX)
 endif
 
@@ -50,15 +50,15 @@ NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB) $(BOOST_LIB)
 	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $< $(OPENCL_INC) $(BOOST_INC)
 
 all: clean arch-cible $(TARGET)
-	@echo "compilation OK"
+	@echo "Finished OK"
 
 arch-cible:
-	@echo "compilation pour architecture $(shell uname)"
+	@echo "compilation on arch $(shell uname)"
 
 plot: all
 	@echo "execution"
 	./$(BINDIR)/$(EXECUTABLE) -c 0.99 -n 983040 -p ./portefeuille.csv -t 1 -b
-	@echo "plot en cours..."
+	@echo "plotting..."
 	@gnuplot histogram.plot
 
 $(TARGET): makedirs $(OBJS)

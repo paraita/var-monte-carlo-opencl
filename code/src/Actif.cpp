@@ -66,10 +66,10 @@ void Actif::setPoids(int poids) {
 }
 
 std::ostream& operator<<(std::ostream& os, Actif a) {
-  os << "{ Actif:" << a.getNom() << " [";
-  os << "rendement:" << a.getRendement() ;
-  os << ", vol:" << a.getVolatilite() ;
-  os << ", taux:" << a.getTauxInteret();
-  os << ", poids:" << a.getPoids() << "]}";
+  os << "{ Asset: " << a.getNom() << " [";
+  os << "value:" << a.getRendement() ;
+  os << ", volat:" << a.getVolatilite() ;
+  os << ", rate:" << a.getTauxInteret();
+  os << ", weight:" << a.getPoids() << "]}";
   return os;
 }

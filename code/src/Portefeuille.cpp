@@ -151,7 +151,7 @@ unsigned int Portefeuille::getTaille() {
 
 std::ostream& operator<<(std::ostream& os, Portefeuille p) {
   std::vector<Actif> actifs = p.getPortefeuille();
-  os << "Portefeuille:[" << std::endl;
+  os << "Ptf:[" << std::endl;
   for (int i = 0; i < actifs.size(); i++) {
     os << actifs[i];
     os << std::endl;
