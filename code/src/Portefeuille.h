@@ -17,7 +17,9 @@
  * It is just a container for multiple assets.
  */
 class Portefeuille {
+
   friend std::ostream& operator<<(std::ostream&, Portefeuille);
+
  public:
   /**
    * Constructor
@@ -66,6 +68,7 @@ class Portefeuille {
    * @return the value of the portfolio.
    */
   float getRendement();
+
  private:
 
   /**
