@@ -21,6 +21,8 @@ OPENCL_LIB   := $(OPENCL_LIB_OSX)
 BOOST_INC	 := $(BOOST_INC_OSX) 
 BOOST_LIB	 := $(BOOST_LIB_OSX)
 endif
+# travis-ci specific
+OPENCL_INC   := -I travis-include
 
 # arborescence
 SRCDIR  := src
