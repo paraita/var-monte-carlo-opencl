@@ -3,4 +3,4 @@ compiler:
   - clang
 before_install:
   - sudo apt-get install libboost-all-dev libboost-chrono1.48.0
-script: cd code;make travis
+script: ls /usr/include/boost;cd code;make travis
