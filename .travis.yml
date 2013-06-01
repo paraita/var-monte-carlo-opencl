@@ -1,6 +1,6 @@
 language: cpp
 compiler:
   - clang
-before_script:
+before_install:
   - sudo apt-get install libboost-all-dev
 script: cd code;make travis
