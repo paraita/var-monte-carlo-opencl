@@ -14,7 +14,7 @@ OPENCL_LIB_LINUX := -lOpenCL -lboost_chrono -lboost_system
 ifeq ($(shell uname), Linux)
 # libs (GNU/Linux specific)
 OPENCL_LIB   := $(OPENCL_LIB_LINUX)
-BOOST_INC	 := -I/usr/include
+BOOST_INC	 := -I /usr/include
 BOOST_LIB	 := -lOpenCL -lboost_chrono -lboost_system
 else
 OPENCL_LIB   := $(OPENCL_LIB_OSX)
@@ -22,7 +22,7 @@ BOOST_INC	 := $(BOOST_INC_OSX)
 BOOST_LIB	 := $(BOOST_LIB_OSX)
 endif
 # travis-ci specific
-OPENCL_INC   := -I travis-include
+OPENCL_INC   := -Itravis-include
 
 # arborescence
 SRCDIR  := src
