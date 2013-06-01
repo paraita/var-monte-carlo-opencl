@@ -2,5 +2,5 @@ language: cpp
 compiler:
   - clang
 before_install:
-  - sudo apt-get install libboost-all-dev libboost-chrono-dev
+  - sudo apt-get install libboost-all-dev libboost-chrono
 script: cd code;make travis
