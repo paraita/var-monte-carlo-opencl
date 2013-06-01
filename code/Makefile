@@ -71,7 +71,7 @@ doc:
 	doxygen config.doxygen
 
 travis: makedirs $(OBJS)
-	@echo "Compilation on Travis done ! No linking possible for the moment..."
+	@echo "Compilation on Travis done ! Linking is not possible for the moment..."
 
 makedirs:
 	@mkdir -p $(OBJDIR)
