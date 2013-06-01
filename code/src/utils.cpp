@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "CLManager.h"
 #include <iostream>
-
+#include <string.h>
 
 bool parse_args(int argc,
 		char** argv,
