@@ -3,4 +3,4 @@ compiler:
   - clang
 before_script:
   - sudo apt-get install libboost-all-dev
-script: cd code;make all
+script: cd code;make travis

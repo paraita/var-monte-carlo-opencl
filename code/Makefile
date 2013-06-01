@@ -40,7 +40,7 @@ LOBJS := $(patsubst %.o,$(OBJDIR)/%.o,$(OBJS))
 
 # Build executable commands
 TARGET  := $(BINDIR)/$(EXECUTABLE)
-NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB) $(BOOST_LIB)
+LINKLINE := $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB) $(BOOST_LIB)
 
 
 ################################################################################
@@ -48,6 +48,9 @@ NVIDIA_LINKLINE = $(LINK) -o $(TARGET) $(LOBJS) $(OPENCL_LIB) $(BOOST_LIB)
 ################################################################################
 %.o : $(SRCDIR)/%.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/$@ -c $< $(OPENCL_INC) $(BOOST_INC)
+
+$(TARGET): makedirs $(OBJS)
+	$(LINKLINE)
 
 all: clean arch-cible $(TARGET)
 	@echo "Finished OK"
@@ -65,8 +68,8 @@ doc:
 	@echo "Generating documentation..."
 	doxygen config.doxygen
 
-$(TARGET): makedirs $(OBJS)
-	$(NVIDIA_LINKLINE)
+travis: makedirs $(OBJS)
+	@echo "Compilation on Travis done ! No linking possible for the moment..."
 
 makedirs:
 	@mkdir -p $(OBJDIR)
