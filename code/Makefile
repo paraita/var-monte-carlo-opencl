@@ -14,7 +14,7 @@ OPENCL_LIB_LINUX := -lOpenCL -lboost_chrono -lboost_system
 ifeq ($(shell uname), Linux)
 # libs (GNU/Linux specific)
 OPENCL_LIB   := $(OPENCL_LIB_LINUX)
-BOOST_INC	 := 
+BOOST_INC	 := -I/usr/include
 BOOST_LIB	 := -lOpenCL -lboost_chrono -lboost_system
 else
 OPENCL_LIB   := $(OPENCL_LIB_OSX)
@@ -70,7 +70,7 @@ doc:
 	@echo "Generating documentation..."
 	doxygen config.doxygen
 
-travis: makedirs $(OBJS)
+travis: clean arch-cible makedirs $(OBJS)
 	@echo "Compilation on Travis done ! Linking is not possible for the moment..."
 
 makedirs:
